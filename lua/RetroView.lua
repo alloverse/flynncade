@@ -1487,7 +1487,7 @@ function RetroView:_init(bounds)
     self:super(bounds)
     me = self
     self:loadCore("/home/nevyn/.config/retroarch/cores/nestopia_libretro.so")
-    self:loadGame("met.nes")
+    self:loadGame("roms/tmnt.nes")
 end
 
 return RetroView
