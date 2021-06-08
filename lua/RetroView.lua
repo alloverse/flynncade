@@ -1452,7 +1452,21 @@ function core_environment(cmd, data)
 end
 
 function core_video_refresh(data, width, height, pitch)
-    print("Yo video", width, height)
+    -- todo
+end
+
+function core_audio_sample_batch(data, frames)
+    -- todo
+	return frames
+end
+
+function core_input_poll()
+    -- todo
+end
+
+function core_input_state(port, device, index, id)
+    print("input state")
+    return 0
 end
 
 function RetroView:loadCore(corePath)
@@ -1460,7 +1474,10 @@ function RetroView:loadCore(corePath)
     self.helper = ffi.load("lua/libhelper.so", false)
     assert(self.handle)
     self.handle.retro_set_environment(core_environment)
+    self.handle.retro_set_input_poll(core_input_poll)
+	self.handle.retro_set_input_state(core_input_state)
     self.handle.retro_set_video_refresh(core_video_refresh)
+    self.handle.retro_set_audio_sample_batch(core_audio_sample_batch)
     self.handle.retro_init()
 end
 
@@ -1474,13 +1491,15 @@ function RetroView:loadGame(gamePath)
     local data = f:read("*a")
     self.info.data = data
     self.info.size = #data
-    print("Yo data", self.info, #data)
     local ok = self.handle.retro_load_game(self.info)
     assert(ok)
 
     self.av = ffi.new("struct retro_system_av_info")
     self.handle.retro_get_system_av_info(self.av)
-    
+end
+
+function RetroView:poll()
+    self.handle.retro_run()
 end
 
 function RetroView:_init(bounds)

@@ -12,7 +12,9 @@ assets = {
 app.assetManager:add(assets)
 
 local mainView = RetroView(Bounds(0, 1.5, -2,   2, 2, 0.1))
-
+app:scheduleAction(1/60.0, true, function()
+    mainView:poll()
+end)
 
 app.mainView = mainView
 
