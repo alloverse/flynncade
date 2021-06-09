@@ -17,10 +17,13 @@ function core_environment(cmd, data)
         cb.log = me.helper.core_log
         return true
     elseif cmd == 3 then -- RETRO_ENVIRONMENT_GET_CAN_DUPE
-        return false
+        local out = ffi.cast("bool*", data)
+        out[0] = true
+        return true
     elseif cmd == 10 then -- RETRO_ENVIRONMENT_SET_PIXEL_FORMAT
         local fmt = ffi.cast("enum retro_pixel_format*", data)
-        return fmt[0] == 1 -- XRGB
+        print("Using video format", fmt[0])
+        return fmt[0] == 1 -- XRGB8888
     elseif cmd == 9 then -- RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY
         local sptr = ffi.cast("const char **", data)
         sptr[0] = "."
@@ -43,14 +46,28 @@ function core_video_refresh(data, width, height, pitch)
         me.trackId, 
         ffi.string(data), 
         width, height, 
-        "bgrx8", -- todo: it's xrgb :S
+        "xrgb8",
         tonumber(pitch)
     )
 end
 
 function core_audio_sample_batch(data, frames)
-    -- todo
-	return frames
+    if frames < 960*2 then
+        print("not enough audio")
+        return 0
+    end
+    if not me.speaker.trackId then
+        print("no speaker")
+        return 0
+    end
+    local stereo = ffi.cast("int16_t*")
+    local left = ffi.new("int16_t[960]")
+    for i=0,960 do
+        left[i] = stereo[i*2]
+    end
+    print("sending ", #left, "frames")
+    me.app.client.client:send_audio(me.speaker.trackId, left)
+	return 960*2
 end
 
 function core_input_poll()
@@ -89,8 +106,8 @@ function RetroView:loadGame(gamePath)
 
     self.av = ffi.new("struct retro_system_av_info")
     self.handle.retro_get_system_av_info(self.av)
-
-    self:setResolution(self.av.geometry.max_width, self.av.geometry.max_height)
+    print("Using resolution", self.av.geometry.base_width, self.av.geometry.base_height)
+    self:setResolution(self.av.geometry.base_width, self.av.geometry.base_height)
 end
 
 function RetroView:poll()
@@ -99,6 +116,7 @@ end
 
 function RetroView:_init(bounds)
     self:super(bounds)
+    self.speaker = self:addSubview(ui.Speaker())
     me = self
     self:loadCore("/home/nevyn/.config/retroarch/cores/nestopia_libretro.so")
     self:loadGame("roms/tmnt.nes")
