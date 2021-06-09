@@ -9,85 +9,32 @@ ffi.cdef(require("cdef"))
 
 class.RetroView(ui.VideoSurface)
 
-local me = nil
-
-function core_environment(cmd, data)
-    if cmd == 27 then -- RETRO_ENVIRONMENT_GET_LOG_INTERFACE
-        local cb = ffi.cast("struct retro_log_callback*", data)
-        cb.log = me.helper.core_log
-        return true
-    elseif cmd == 3 then -- RETRO_ENVIRONMENT_GET_CAN_DUPE
-        local out = ffi.cast("bool*", data)
-        out[0] = true
-        return true
-    elseif cmd == 10 then -- RETRO_ENVIRONMENT_SET_PIXEL_FORMAT
-        local fmt = ffi.cast("enum retro_pixel_format*", data)
-        print("Using video format", fmt[0])
-        return fmt[0] == 1 -- XRGB8888
-    elseif cmd == 9 then -- RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY
-        local sptr = ffi.cast("const char **", data)
-        sptr[0] = "."
-        return true
-    elseif cmd == 31 then -- RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY
-        local sptr = ffi.cast("const char **", data)
-        sptr[0] = "."
-        return true
-    end
-
-    --print("Unhandled env", cmd)
-    return false
-end
-
-function core_video_refresh(data, width, height, pitch)
-    if not me.trackId then
-        return
-    end
-    me.app.client.client:send_video(
-        me.trackId, 
-        ffi.string(data), 
-        width, height, 
-        "xrgb8",
-        tonumber(pitch)
-    )
-end
-
-function core_audio_sample_batch(data, frames)
-    if frames < 960*2 then
-        print("not enough audio")
-        return 0
-    end
-    if not me.speaker.trackId then
-        print("no speaker")
-        return 0
-    end
-    local stereo = ffi.cast("int16_t*")
-    local left = ffi.new("int16_t[960]")
-    for i=0,960 do
-        left[i] = stereo[i*2]
-    end
-    print("sending ", #left, "frames")
-    me.app.client.client:send_audio(me.speaker.trackId, left)
-	return 960*2
-end
-
-function core_input_poll()
-    -- todo
-end
-
-function core_input_state(port, device, index, id)
-    print("input state")
-    return 0
+function RetroView:_init(bounds)
+    self:super(bounds)
+    self.speaker = self:addSubview(ui.Speaker())
+    self:loadCore("/home/nevyn/.config/retroarch/cores/nestopia_libretro.so")
+    self:loadGame("roms/tmnt.nes")
 end
 
 function RetroView:loadCore(corePath)
     self.handle = ffi.load(corePath, false)
     self.helper = ffi.load("lua/libhelper.so", false)
     assert(self.handle)
-    self.handle.retro_set_environment(core_environment)
-    self.handle.retro_set_input_poll(core_input_poll)
-	self.handle.retro_set_input_state(core_input_state)
-    self.handle.retro_set_video_refresh(core_video_refresh)
-    self.handle.retro_set_audio_sample_batch(core_audio_sample_batch)
+    self.handle.retro_set_environment(function(cmd, data)
+        return self:_environment(cmd, data)
+    end)
+    self.handle.retro_set_input_poll(function()
+        return self:_input_poll()
+    end)
+	self.handle.retro_set_input_state(function(port, device, index, id)
+        return self:_input_state(port, device, index, id)
+    end)
+    self.handle.retro_set_video_refresh(function(data, width, height, pitch)
+        return self:_video_refresh(data, width, height, pitch)
+    end)
+    self.handle.retro_set_audio_sample_batch(function(data, frames)
+        return self:_audio_sample_batch(data, frames)
+    end)
     self.handle.retro_init()
 end
 
@@ -114,12 +61,72 @@ function RetroView:poll()
     self.handle.retro_run()
 end
 
-function RetroView:_init(bounds)
-    self:super(bounds)
-    self.speaker = self:addSubview(ui.Speaker())
-    me = self
-    self:loadCore("/home/nevyn/.config/retroarch/cores/nestopia_libretro.so")
-    self:loadGame("roms/tmnt.nes")
+function RetroView:_environment(cmd, data)
+    if cmd == 27 then -- RETRO_ENVIRONMENT_GET_LOG_INTERFACE
+        local cb = ffi.cast("struct retro_log_callback*", data)
+        cb.log = self.helper.core_log
+        return true
+    elseif cmd == 3 then -- RETRO_ENVIRONMENT_GET_CAN_DUPE
+        local out = ffi.cast("bool*", data)
+        out[0] = true
+        return true
+    elseif cmd == 10 then -- RETRO_ENVIRONMENT_SET_PIXEL_FORMAT
+        local fmt = ffi.cast("enum retro_pixel_format*", data)
+        print("Using video format", fmt[0])
+        return fmt[0] == 1 -- XRGB8888
+    elseif cmd == 9 then -- RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY
+        local sptr = ffi.cast("const char **", data)
+        sptr[0] = "."
+        return true
+    elseif cmd == 31 then -- RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY
+        local sptr = ffi.cast("const char **", data)
+        sptr[0] = "."
+        return true
+    end
+
+    --print("Unhandled env", cmd)
+    return false
+end
+
+function RetroView:_video_refresh(data, width, height, pitch)
+    if not self.trackId then
+        return
+    end
+    self.app.client.client:send_video(
+        self.trackId, 
+        ffi.string(data), 
+        width, height, 
+        "xrgb8",
+        tonumber(pitch)
+    )
+end
+
+function RetroView:_audio_sample_batch(data, frames)
+    if frames < 960*2 then
+        --print("not enough audio")
+        return 0
+    end
+    if not self.speaker.trackId then
+        print("no speaker")
+        return 0
+    end
+    local stereo = ffi.cast("int16_t*")
+    local left = ffi.new("int16_t[960]")
+    for i=0,960 do
+        left[i] = stereo[i*2]
+    end
+    print("sending ", #left, "frames")
+    self.app.client.client:send_audio(self.speaker.trackId, left)
+	return 960*2
+end
+
+function RetroView:_input_poll()
+    -- todo
+end
+
+function RetroView:_input_state(port, device, index, id)
+    print("input state")
+    return 0
 end
 
 return RetroView
