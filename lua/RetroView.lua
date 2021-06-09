@@ -9,6 +9,8 @@ ffi.cdef(require("cdef"))
 
 class.RetroView(ui.VideoSurface)
 
+--------------- setup ------------------
+
 function RetroView:_init(bounds)
     self:super(bounds)
     self.speaker = self:addSubview(ui.Speaker())
@@ -57,9 +59,24 @@ function RetroView:loadGame(gamePath)
     self:setResolution(self.av.geometry.base_width, self.av.geometry.base_height)
 end
 
+function RetroView:getFps()
+    return self.av.timing.fps
+end
+
+
+function RetroView:specification()
+    local spec = VideoSurface.specification(self)
+    spec.geometry.uvs = {{1.0, 1.0},           {0.0, 1.0},          {1.0, 0.0},           {0.0, 0.0}}
+    return spec
+end
+
+----------------- running --------------------
+
 function RetroView:poll()
     self.handle.retro_run()
 end
+
+-------- libretro emulator callbacks -----------
 
 function RetroView:_environment(cmd, data)
     if cmd == 27 then -- RETRO_ENVIRONMENT_GET_LOG_INTERFACE
