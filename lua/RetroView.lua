@@ -11,10 +11,10 @@ class.RetroView(ui.VideoSurface)
 
 --------------- setup ------------------
 
-function RetroView:_init(bounds)
+function RetroView:_init(bounds, cores)
     self:super(bounds)
     self.speaker = self:addSubview(ui.Speaker())
-    self:loadCore("/home/nevyn/.config/retroarch/cores/nestopia_libretro.so")
+    self:loadCore(cores.."/fceumm_libretro.so")
     self:loadGame("roms/tmnt.nes")
 end
 
@@ -66,7 +66,7 @@ end
 
 function RetroView:specification()
     local spec = VideoSurface.specification(self)
-    spec.geometry.uvs = {{1.0, 1.0},           {0.0, 1.0},          {1.0, 0.0},           {0.0, 0.0}}
+    spec.geometry.uvs = {{0.0, 1.0},           {1.0, 1.0},          {0.0, 0.0},           {1.0, 0.0}}
     return spec
 end
 
@@ -89,8 +89,8 @@ function RetroView:_environment(cmd, data)
         return true
     elseif cmd == 10 then -- RETRO_ENVIRONMENT_SET_PIXEL_FORMAT
         local fmt = ffi.cast("enum retro_pixel_format*", data)
-        print("Using video format", fmt[0])
-        return fmt[0] == 1 -- XRGB8888
+        print("Emulator requested video format", fmt[0])
+        return tonumber(fmt[0]) == 1 -- XRGB8888
     elseif cmd == 9 then -- RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY
         local sptr = ffi.cast("const char **", data)
         sptr[0] = "."
@@ -142,7 +142,7 @@ function RetroView:_input_poll()
 end
 
 function RetroView:_input_state(port, device, index, id)
-    print("input state")
+    --print("input state")
     return 0
 end
 
