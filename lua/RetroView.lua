@@ -36,7 +36,16 @@ function core_environment(cmd, data)
 end
 
 function core_video_refresh(data, width, height, pitch)
-    -- todo
+    if not me.trackId then
+        return
+    end
+    me.app.client.client:send_video(
+        me.trackId, 
+        ffi.string(data), 
+        width, height, 
+        "bgrx8", -- todo: it's xrgb :S
+        tonumber(pitch)
+    )
 end
 
 function core_audio_sample_batch(data, frames)
@@ -80,6 +89,8 @@ function RetroView:loadGame(gamePath)
 
     self.av = ffi.new("struct retro_system_av_info")
     self.handle.retro_get_system_av_info(self.av)
+
+    self:setResolution(self.av.geometry.max_width, self.av.geometry.max_height)
 end
 
 function RetroView:poll()
