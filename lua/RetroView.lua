@@ -13,7 +13,13 @@ class.RetroView(ui.VideoSurface)
 
 function RetroView:_init(bounds, cores)
     self:super(bounds)
+
     self.speaker = self:addSubview(ui.Speaker())
+
+    self.frame_capacity = 960*8
+    self.audiobuffer = ffi.new("int16_t[?]", self.frame_capacity)
+    self.buffered_frames = 0
+
     self:loadCore(cores.."/fceumm_libretro.so")
     self:loadGame("roms/tmnt.nes")
 end
@@ -55,7 +61,12 @@ function RetroView:loadGame(gamePath)
 
     self.av = ffi.new("struct retro_system_av_info")
     self.handle.retro_get_system_av_info(self.av)
-    print("Using resolution", self.av.geometry.base_width, self.av.geometry.base_height)
+    print(
+        "Emulator AV info:\n\tVideo dimensions:", 
+        self.av.geometry.base_width, "x", self.av.geometry.base_height,
+        "\n\tVideo frame rate:", self.av.timing.fps,
+        "\n\tAudio sample rate:", self.av.timing.sample_rate
+    )
     self:setResolution(self.av.geometry.base_width, self.av.geometry.base_height)
 end
 
@@ -109,6 +120,9 @@ function RetroView:_video_refresh(data, width, height, pitch)
     if not self.trackId then
         return
     end
+    if self.frame_id == nil then self.frame_id = 0 end
+    self.frame_id = self.frame_id + 1
+    if self.frame_id % 4 ~= 0 then return end
     self.app.client.client:send_video(
         self.trackId, 
         ffi.string(data), 
@@ -119,22 +133,39 @@ function RetroView:_video_refresh(data, width, height, pitch)
 end
 
 function RetroView:_audio_sample_batch(data, frames)
-    if frames < 960*2 then
-        --print("not enough audio")
-        return 0
+    if self.buffered_frames + frames >= self.frame_capacity then
+        print("audio buffer overload: ", self.buffered_frames, "+", frames, "in", self.frame_capacity)
+        self:_sendBufferedAudio()
+        return frames
     end
+    ffi.copy(self.audiobuffer + self.buffered_frames, data, frames*2)
+    self.buffered_frames = self.buffered_frames + frames
+    self:_sendBufferedAudio()
+    return frames
+end
+
+local x = 0
+function RetroView:_sendBufferedAudio()
     if not self.speaker.trackId then
-        print("no speaker")
-        return 0
+        return
     end
-    local stereo = ffi.cast("int16_t*")
+    if self.buffered_frames < 960*2 then
+        return
+    end
     local left = ffi.new("int16_t[960]")
-    for i=0,960 do
-        left[i] = stereo[i*2]
+    for i=0,960-1 do
+        --left[i] = .8*0x8000*math.sin(2*3.141*440*x/48000); x = x + 1
+        left[i] = self.audiobuffer[i*2]
     end
-    print("sending ", #left, "frames")
-    self.app.client.client:send_audio(self.speaker.trackId, left)
-	return 960*2
+    
+    self.buffered_frames = self.buffered_frames - 960*2
+    ffi.copy(self.audiobuffer, self.audiobuffer+960*2, self.buffered_frames)
+
+    self.app.client.client:send_audio(self.speaker.trackId, ffi.string(left, 960*2))
+	
+    if self.buffered_frames > 960*2 then
+        self:_sendBufferedAudio()
+    end
 end
 
 function RetroView:_input_poll()
