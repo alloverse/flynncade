@@ -2,7 +2,8 @@ local RetroView = require("RetroView")
 
 local client = Client(
     arg[2], 
-    "flynncade"
+    "flynncade",
+    allonet.create(true)
 )
 local app = App(client)
 

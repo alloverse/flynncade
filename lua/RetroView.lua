@@ -21,7 +21,7 @@ function RetroView:_init(bounds, cores)
     self.buffered_frames = 0
 
     self:loadCore(cores.."/fceumm_libretro.so")
-    self:loadGame("roms/tmnt.nes")
+    self:loadGame("roms/met.nes")
 end
 
 function RetroView:loadCore(corePath)
