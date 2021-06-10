@@ -154,7 +154,7 @@ end
 
 function RetroView:_audio_sample_batch(data, frames)
     local samples = frames * 2 -- because stereo
-    if self.audiodebug then self.audiodebug:write(ffi.string(data, samples*2)) end
+    --if self.audiodebug then self.audiodebug:write(ffi.string(data, samples*2)) end
     if self.buffered_samples + samples >= self.sample_capacity then
         print("audio buffer overload: ", self.buffered_samples, "+", samples, "in", self.sample_capacity)
         self:_sendBufferedAudio()
