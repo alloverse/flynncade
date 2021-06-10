@@ -16,12 +16,13 @@ function RetroView:_init(bounds, cores)
 
     self.speaker = self:addSubview(ui.Speaker())
 
-    self.frame_capacity = 960*8
-    self.audiobuffer = ffi.new("int16_t[?]", self.frame_capacity)
-    self.buffered_frames = 0
+    self.sample_capacity = 960*8
+    self.audiobuffer = ffi.new("int16_t[?]", self.sample_capacity)
+    self.buffered_samples = 0
+    self.audiodebug = io.open("debug.pcm", "wb")
 
     self:loadCore(cores.."/nestopia_libretro.so")
-    self:loadGame("roms/met.nes")
+    self:loadGame("roms/tmnt.nes")
 end
 
 function RetroView:loadCore(corePath)
@@ -136,13 +137,15 @@ function RetroView:_video_refresh(data, width, height, pitch)
 end
 
 function RetroView:_audio_sample_batch(data, frames)
-    if self.buffered_frames + frames >= self.frame_capacity then
-        print("audio buffer overload: ", self.buffered_frames, "+", frames, "in", self.frame_capacity)
+    local samples = frames * 2 -- because stereo
+    if self.audiodebug then self.audiodebug:write(ffi.string(data, samples*2)) end
+    if self.buffered_samples + samples >= self.sample_capacity then
+        print("audio buffer overload: ", self.buffered_samples, "+", samples, "in", self.sample_capacity)
         self:_sendBufferedAudio()
         return frames
     end
-    ffi.copy(self.audiobuffer + self.buffered_frames, data, frames*2)
-    self.buffered_frames = self.buffered_frames + frames
+    ffi.copy(self.audiobuffer + self.buffered_samples, data, samples*2)
+    self.buffered_samples = self.buffered_samples + samples
     self:_sendBufferedAudio()
     return frames
 end
@@ -152,7 +155,7 @@ function RetroView:_sendBufferedAudio()
     if not self.speaker.trackId then
         return
     end
-    if self.buffered_frames < 960*2 then
+    if self.buffered_samples < 960*2 then
         return
     end
     local left = ffi.new("int16_t[960]")
@@ -161,12 +164,15 @@ function RetroView:_sendBufferedAudio()
         left[i] = self.audiobuffer[i*2]
     end
     
-    self.buffered_frames = self.buffered_frames - 960*2
-    ffi.copy(self.audiobuffer, self.audiobuffer+960*2, self.buffered_frames)
+    self.buffered_samples = self.buffered_samples - 960*2
+    ffi.copy(self.audiobuffer, self.audiobuffer+960*2, self.buffered_samples)
 
-    self.app.client.client:send_audio(self.speaker.trackId, ffi.string(left, 960*2))
+    local out = ffi.string(left, 960*2)
+
+    --if self.audiodebug then self.audiodebug:write(out) end
+    self.app.client.client:send_audio(self.speaker.trackId, out)
 	
-    if self.buffered_frames > 960*2 then
+    if self.buffered_samples > 960*2 then
         self:_sendBufferedAudio()
     end
 end
