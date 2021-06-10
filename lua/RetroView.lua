@@ -116,21 +116,49 @@ function RetroView:_environment(cmd, data)
     return false
 end
 
+local OR, XOR, AND = 1, 3, 4
+function bop(a, oper, b)
+   local r, m, s = 0, 2^31
+   repeat
+      s,a,b = a+b+m, a%m, b%m
+      r,m = r + m*oper%(s-a-b), m/2
+   until m < 1
+   return r
+end
+
 function RetroView:_video_refresh(data, width, height, pitch)
     if not self.trackId then
         return
     end
     if self.frame_id == nil then self.frame_id = 0 end
     self.frame_id = self.frame_id + 1
-    if self.frame_id % 4 ~= 0 then return end
+    if self.frame_id % 8 ~= 0 then return end
+    --ffi.fill(ffi.cast("char*", data), pitch*height, 128)
+    pitch = tonumber(pitch)
+
     self.app.client.client:send_video(
         self.trackId, 
         ffi.string(data), 
         width, height, 
         "xrgb8",
-        tonumber(pitch)
+        pitch
     )
 end
+
+-- pitch2 = width * 4
+-- local pix1 = ffi.cast("uint8_t*", data)
+-- local pix2 = ffi.new("uint8_t[?]", width*height*4)
+-- for y=0, height-1 do
+--     for x=0, width-1 do
+--         local r = bop(pix1[(y*width+x)*2], AND, 0b11111000) / 8
+--         local g = bop(pix1[(y*width+x)*2], AND, 0b00000111) * 8 + bop(pix1[(y*width+x)*2 + 1], AND, 0b11100000) / 32
+--         local b = bop(pix1[(y*width+x)*2 + 1], AND, 0b00011111) / 8
+--         pix2[(y*width+x)*4 + 0] = r
+--         pix2[(y*width+x)*4 + 1] = g
+--         pix2[(y*width+x)*4 + 2] = b
+--         pix2[(y*width+x)*4 + 3] = 255
+--     end
+-- end
 
 function RetroView:_audio_sample_batch(data, frames)
     if self.buffered_frames + frames >= self.frame_capacity then
