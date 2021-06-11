@@ -23,6 +23,10 @@ app:scheduleAction(1/mainView:getFps(), true, function()
     mainView:poll()
 end)
 
+app:scheduleAction(5.0, true, function() 
+    print("Network stats", app.client.client:get_stats())
+end)
+
 app.mainView = mainView
 
 app:connect()
