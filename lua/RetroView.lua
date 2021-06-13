@@ -22,7 +22,7 @@ local alloToDeviceIdMap = {
     ["hand/right-b"]= "b",
 }
 
-function RetroView:_init(bounds, cores)
+function RetroView:_init(bounds)
     self:super(bounds)
 
     self.speaker = self:addSubview(ui.Speaker())
@@ -36,12 +36,33 @@ function RetroView:_init(bounds, cores)
     self.audiodebug = io.open("debug.pcm", "wb")
     self.controllerStates = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
 
-    self:loadCore(cores.."/nestopia_libretro.so")
+    self:loadCore("nestopia_libretro")
     self:loadGame("roms/tmnt.nes")
 end
 
-function RetroView:loadCore(corePath)
-    self.handle = ffi.load(corePath, false)
+function os.system(cmd)
+    local f = assert(io.popen(cmd, 'r'))
+    local s = assert(f:read('*a'))
+    f:close()
+    return s:match("^%s*(.-)%s*$")
+  end
+
+function _loadCore(coreName)
+    local corePath = os.system("echo ~/.config/RetroArch/cores/"..coreName..".so")
+    ok, what = pcall(ffi.load, corePath, false)
+    if ok then
+        return what
+    end
+    local corePath = os.system("echo $HOME/Library/Application\\ Support/RetroArch/cores/"..coreName..".dylib")
+    ok, what2 = pcall(ffi.load, corePath, false)
+    if ok then
+        return what2
+    end
+    error("Failed to load core "..coreName..": "..what.."///"..what2)
+end
+
+function RetroView:loadCore(coreName)
+    self.handle = _loadCore(coreName)
     self.helper = ffi.load("lua/libhelper.so", false)
     assert(self.handle)
     self.handle.retro_set_environment(function(cmd, data)
