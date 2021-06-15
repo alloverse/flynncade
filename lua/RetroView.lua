@@ -48,7 +48,7 @@ function os.system(cmd)
   end
 
 function _loadCore(coreName)
-    local corePath = os.system("echo ~/.config/RetroArch/cores/"..coreName..".so")
+    local corePath = os.system("echo ~/.config/retroarch/cores/"..coreName..".so")
     ok, what = pcall(ffi.load, corePath, false)
     if ok then
         return what
