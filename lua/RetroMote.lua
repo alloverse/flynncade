@@ -19,14 +19,15 @@ local retroDeviceIdMap = {
     "a", "x", "l", "r", "l2", "r2", "l3", "r3"
 }
 
-class.RetroMote(ui.Cube)
+class.RetroMote(ui.View)
 
 function RetroMote:_init(bounds, playerIndex)
     self:super(bounds)
     self.playerIndex = playerIndex
     self.controllerStates = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     self:setGrabbable(true, {
-        capture_controls= {"trigger", "thumbstick", "a", "b", "x", "y", "menu"}
+        capture_controls= {"trigger", "thumbstick", "a", "b", "x", "y", "menu"},
+        target_hand_transform= mat4.identity()
     })
 end
 
