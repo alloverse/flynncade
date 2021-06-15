@@ -4,6 +4,7 @@ local pretty = require('pl.pretty')
 local vec3 = require("modules.vec3")
 local mat4 = require("modules.mat4")
 local ffi = require("ffi")
+local RetroMote = require("RetroMote")
 
 ffi.cdef(require("cdef"))
 
@@ -11,16 +12,6 @@ class.RetroView(ui.VideoSurface)
 
 --------------- setup ------------------
 
-local retroDeviceIdMap = {
-    "b", "y", "select", "start", "up", "down", "left", "right",
-    "a", "x", "l", "r", "l2", "r2", "l3", "r3"
-}
-local alloToDeviceIdMap = {
-    ["hand/left-x"]= "start",
-    ["hand/left-y"]= "select",
-    ["hand/right-a"]= "a",
-    ["hand/right-b"]= "b",
-}
 
 function RetroView:_init(bounds)
     self:super(bounds)
@@ -31,10 +22,14 @@ function RetroView:_init(bounds)
     self.audiobuffer = ffi.new("int16_t[?]", self.sample_capacity)
     self.buffered_samples = 0
     self.audiodebug = io.open("debug.pcm", "wb")
-    self.controllerStates = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
+
+    self.controllers = {
+        self:addSubview(RetroMote(Bounds(-0.35, -0.3, 0.6,   0.2, 0.05, 0.1), 1)),
+        self:addSubview(RetroMote(Bounds( 0.35, -0.3, 0.6,   0.2, 0.05, 0.1), 2))
+    }
 
     self:loadCore("nestopia_libretro")
-    self:loadGame("roms/tmnt.nes")
+    self:loadGame("roms/tmnt2.nes")
 end
 
 function os.system(cmd)
@@ -78,6 +73,7 @@ function RetroView:loadCore(coreName)
         return self:_audio_sample_batch(data, frames)
     end)
     self.handle.retro_set_controller_port_device(0, 1); -- controller port 0 is a joypad
+    self.handle.retro_set_controller_port_device(1, 1); -- controller port 1 is a joypad
     self.handle.retro_init()
 end
 
@@ -218,54 +214,10 @@ function RetroView:_input_poll()
 end
 
 function RetroView:_input_state(port, device, index, id)
-    return self.controllerStates[id+1]
+    return self.controllers[port+1].controllerStates[id+1]
 end
 
------ input
 
-function RetroView:onCapturedButtonPressed(hand, handName, buttonName)
-    local alloname = handName.."-"..buttonName
-    local retrobutton = alloToDeviceIdMap[alloname]
-    if not retrobutton then return end
-    local buttonId = tablex.find(retroDeviceIdMap, retrobutton)
-    self.controllerStates[buttonId] = true
-end
-function RetroView:onCapturedButtonReleased(hand, handName, buttonName)
-    local alloname = handName.."-"..buttonName
-    local retrobutton = alloToDeviceIdMap[alloname]
-    if not retrobutton then return end
-    local buttonId = tablex.find(retroDeviceIdMap, retrobutton)
-    self.controllerStates[buttonId] = false
-end
-function RetroView:onCapturedAxis(hand, handName, axisName, data)
-    if handName == "hand/left" and axisName == "thumbstick" then
-        local up = tablex.find(retroDeviceIdMap, "up")
-        local down = tablex.find(retroDeviceIdMap, "down")
-        local left = tablex.find(retroDeviceIdMap, "left")
-        local right = tablex.find(retroDeviceIdMap, "right")
-        local x, y = unpack(data)
-        if y > 0.1 then 
-            self.controllerStates[up] = true 
-            self.controllerStates[down] = false
-        elseif y < -0.1 then
-            self.controllerStates[up] = false
-            self.controllerStates[down] = true
-        else
-            self.controllerStates[up] = false
-            self.controllerStates[down] = false
-        end
-        if x > 0.1 then 
-            self.controllerStates[left] = false
-            self.controllerStates[right] = true
-        elseif x < -0.1 then
-            self.controllerStates[left] = true 
-            self.controllerStates[right] = false
-        else
-            self.controllerStates[left] = false 
-            self.controllerStates[right] = false
-        end
-    end
-end
 
 
 return RetroView
