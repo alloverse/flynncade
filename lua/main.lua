@@ -13,7 +13,8 @@ assets = {
 }
 app.assetManager:add(assets)
 
-local main = ui.View(Bounds(0, 1.5, -2,   2, 2, 0.1))
+local main = ui.View(Bounds(0.2, 1.1, -4.5,   2, 2, 0.1))
+main:setGrabbable(true)
 
 local tv = main:addSubview(ui.ModelView(Bounds(-1.32,0,0,  1,1,1):rotate(-3.14/2, 0,1,0), assets.crt))
 

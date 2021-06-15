@@ -26,9 +26,6 @@ function RetroView:_init(bounds)
     self:super(bounds)
 
     self.speaker = self:addSubview(ui.Speaker())
-    self:setGrabbable(true, {
-        capture_controls= {"trigger", "thumbstick", "a", "b", "x", "y", "menu"}
-    })
 
     self.sample_capacity = 960*8
     self.audiobuffer = ffi.new("int16_t[?]", self.sample_capacity)
