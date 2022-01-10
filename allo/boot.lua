@@ -18,13 +18,16 @@ function os.uname()
     return os.system("uname -s")
 end
 
+local dylibext = ""
 if os.uname():find("^Darwin") ~= nil then
-    package.cpath = package.cpath..";"..libDir.."/?.dylib"
+    dylibext = "dylib"
 elseif string.match(package.cpath, "so") then
-    package.cpath = package.cpath..";"..libDir.."/?.so"
+    dylibext = "so"
 elseif string.match(package.cpath, "dll") then
-    package.cpath = package.cpath..";"..libDir.."/?.dll"
+    dylibext = "dll"
 end
+
+package.cpath = package.cpath..";"..libDir.."/?."..dylibext
 
 package.path = package.path
     ..";"..srcDir.."/?.lua"
@@ -35,8 +38,12 @@ package.path = package.path
 -- Establish globals
 require("liballonet")
 local ffi = require 'ffi'
-local av = ffi.load(libDir .. "/liballonet_av.dylib", true)
-ffi.load(libDir .. "/liballonet.dylib", true)
+local ok, av = ffi.load(libDir .. "/liballonet_av."..dylibext, true)
+if not ok then
+    av = nil
+    print("NOTE: liballonet_av not available, h264 cannot be used")
+end
+ffi.load(libDir .. "/liballonet."..dylibext, true)
  ffi.cdef [[
    void allo_libav_initialize(void);
  ]]
