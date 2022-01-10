@@ -221,6 +221,9 @@ function RetroView:_input_poll()
 end
 
 function RetroView:_input_state(port, device, index, id)
+    if port >= #self.controllers then
+        return false
+    end
     return self.controllers[port+1].controllerStates[id+1]
 end
 
