@@ -29,7 +29,7 @@ function RetroView:_init(bounds)
     }
 
     self:loadCore("nestopia")
-    self:loadGame("roms/tmnt2.nes")
+    self:loadGame("roms/NES/tmnt2/tmnt2.nes")
 end
 
 function os.system(cmd)
