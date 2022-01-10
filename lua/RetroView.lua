@@ -106,6 +106,7 @@ function RetroView:loadGame(gamePath)
         "\n\tAudio sample rate:", self.av.timing.sample_rate
     )
     self:setResolution(self.av.geometry.base_width, self.av.geometry.base_height)
+    self:setVideoFormat("h264")
 end
 
 function RetroView:getFps()
