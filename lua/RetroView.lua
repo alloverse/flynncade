@@ -28,7 +28,7 @@ function RetroView:_init(bounds)
         self:addSubview(RetroMote(Bounds( 0.35, -0.3, 0.6,   0.2, 0.05, 0.1), 2))
     }
 
-    self:loadCore("nestopia_libretro")
+    self:loadCore("nestopia")
     self:loadGame("roms/tmnt2.nes")
 end
 
@@ -40,17 +40,24 @@ function os.system(cmd)
   end
 
 function _loadCore(coreName)
-    local corePath = os.system("echo ~/.config/retroarch/cores/"..coreName..".so")
-    ok, what = pcall(ffi.load, corePath, false)
-    if ok then
-        return what
+    local searchPaths = {
+        "~/.config/retroarch/cores/"..coreName.."_libretro.so", -- apt install path
+        "/usr/lib/x86_64-linux-gnu/libretro/"..coreName.."_libretro.so", -- gui install path linux
+        "$HOME/Library/Application\\ Support/RetroArch/cores/"..coreName.."_libretro.dylib" -- gui install path mac
+    }
+
+    for i, path in ipairs(searchPaths) do
+        print("Trying to load core from "..path)
+        local corePath = os.system("echo "..path)
+        ok, what = pcall(ffi.load, corePath, false)
+        if ok then
+            print("Success")
+            return what
+        else
+            print("Failed: "..what)
+        end
     end
-    local corePath = os.system("echo $HOME/Library/Application\\ Support/RetroArch/cores/"..coreName..".dylib")
-    ok, what2 = pcall(ffi.load, corePath, false)
-    if ok then
-        return what2
-    end
-    error("Failed to load core "..coreName..": "..what.."///"..what2)
+    error("Core "..coreName.." not available anywhere :(")
 end
 
 function RetroView:loadCore(coreName)
