@@ -38,17 +38,18 @@ package.path = package.path
 -- Establish globals
 require("liballonet")
 local ffi = require 'ffi'
-local ok, av = ffi.load(libDir .. "/liballonet_av."..dylibext, true)
-if not ok then
+local libav_available, av = pcall(ffi.load, libDir .. "/liballonet_av."..dylibext, true)
+if not libav_available then
     av = nil
     print("NOTE: liballonet_av not available, h264 cannot be used")
+else
+    print("liballonet_av loaded with libavcodec support")
+    ffi.load(libDir .. "/liballonet."..dylibext, true)
+    ffi.cdef [[
+    void allo_libav_initialize(void);
+    ]]
+    ffi.C.allo_libav_initialize()
 end
-ffi.load(libDir .. "/liballonet."..dylibext, true)
- ffi.cdef [[
-   void allo_libav_initialize(void);
- ]]
- ffi.C.allo_libav_initialize()
- 
  
 Client = require("alloui.client")
 ui = require("alloui.ui")
@@ -59,6 +60,7 @@ vec3 = require("modules.vec3")
 mat4 = require("modules.mat4")
 
 ui.App.initialLocation = nil
+ui.VideoSurface.libavAvailable = libav_available
 if arg[3] then
     local ms = {string.match(arg[3], "([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+), ([-+\\.%d]+)")}
     local x, y, z = string.match(arg[3], "([-+\\.%d]+),([-+\\.%d]+),([-+\\.%d]+)")
