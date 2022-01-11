@@ -181,15 +181,24 @@ function RetroView:_video_refresh(data, width, height, pitch)
 end
 
 function RetroView:_audio_sample_batch(data, frames)
-    local samples = frames * 2 -- because stereo
-    --if self.audiodebug then self.audiodebug:write(ffi.string(data, samples*2)) end
-    if self.buffered_samples + samples >= self.sample_capacity then
-        print("audio buffer overload: ", self.buffered_samples, "+", samples, "in", self.sample_capacity)
+    local dest_samplerate = 48000
+    local source_channel_count = 2
+    local dest_channel_count = 1
+    local dest_frames = (dest_samplerate/self.av.timing.sample_rate) * tonumber(frames) * 2 -- in case resampling requires multi-pass headroom
+    --if self.audiodebug then self.audiodebug:write(ffi.string(data, frames*2*source_channel_count)) end
+    if self.buffered_samples + dest_frames*dest_channel_count >= self.sample_capacity then
+        print("audio buffer overload: ", self.buffered_samples, "+", frames, "in", self.sample_capacity)
         self:_sendBufferedAudio()
         return frames
     end
-    ffi.copy(self.audiobuffer + self.buffered_samples, data, samples*2)
-    self.buffered_samples = self.buffered_samples + samples
+    local converted_count = self.helper.flynn_resample(
+        data, frames, self.av.timing.sample_rate, source_channel_count == 2 and true or false,
+        self.audiobuffer + self.buffered_samples, dest_frames, dest_samplerate, dest_channel_count == 2 and true or false
+    )
+    --if self.audiodebug then self.audiodebug:write(ffi.string(self.audiobuffer + self.buffered_samples, converted_count*2*dest_channel_count)) end
+    --print("in", frames, "out", dest_frames, "actual", converted_count)
+
+    self.buffered_samples = self.buffered_samples + converted_count
     self:_sendBufferedAudio()
     return frames
 end
@@ -199,18 +208,15 @@ function RetroView:_sendBufferedAudio()
     if not self.speaker.trackId then
         return
     end
-    if self.buffered_samples < 960*2 then
+    if self.buffered_samples < 960 then
         return
     end
     local left = ffi.new("int16_t[960]")
-    for i=0,960-1 do
-        --left[i] = .8*0x8000*math.sin(2*3.141*440*x/48000); x = x + 1
-        left[i] = self.audiobuffer[i*2]
-    end
+    ffi.copy(left, self.audiobuffer, 960*2)
     
-    self.buffered_samples = self.buffered_samples - 960*2
+    self.buffered_samples = self.buffered_samples - 960
     for i=0,tonumber(self.buffered_samples)-1 do
-        self.audiobuffer[i] = self.audiobuffer[960*2 + i]
+        self.audiobuffer[i] = self.audiobuffer[960 + i]
     end
 
     local out = ffi.string(left, 960*2)
@@ -218,7 +224,7 @@ function RetroView:_sendBufferedAudio()
     --if self.audiodebug then self.audiodebug:write(out) end
     self.app.client.client:send_audio(self.speaker.trackId, out)
 	
-    if self.buffered_samples > 960*2 then
+    if self.buffered_samples > 960 then
         self:_sendBufferedAudio()
     end
 end
