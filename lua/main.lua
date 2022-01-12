@@ -45,7 +45,12 @@ app:scheduleAction(1.0/emulator:getFps(), true, function()
     emulator:poll()
 end)
 
-local scale = 0.00035
+local scale = 0.002
+
+emulator.controllers = {
+    emulator:addSubview(RetroMote(Bounds(-0.7, 4.3, 1.3,   0.2, 0.05, 0.1), 1)),
+    emulator:addSubview(RetroMote(Bounds( 0.7, 4.3, 1.3,   0.2, 0.05, 0.1), 2))
+}
 emulator.controllers[1]:addSubview(ui.ModelView(Bounds(0,0,0, 0.2,0.1,0.1):scale(scale,scale,scale):rotate(-3.14/2,1,0,0), assets.snesmote))
 emulator.controllers[2]:addSubview(ui.ModelView(Bounds(0,0,0, 0.2,0.1,0.1):scale(scale,scale,scale):rotate(-3.14/2,1,0,0), assets.snesmote))
 

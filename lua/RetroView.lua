@@ -23,11 +23,6 @@ function RetroView:_init(bounds)
     self.buffered_samples = 0
     self.audiodebug = io.open("debug.pcm", "wb")
 
-    self.controllers = {
-        self:addSubview(RetroMote(Bounds(-0.35, -0.3, 0.6,   0.2, 0.05, 0.1), 1)),
-        self:addSubview(RetroMote(Bounds( 0.35, -0.3, 0.6,   0.2, 0.05, 0.1), 2))
-    }
-
     self:loadCore("nestopia")
     self:loadGame("roms/NES/tmnt2/tmnt2.nes")
 end
