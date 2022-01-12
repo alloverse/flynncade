@@ -7,3 +7,4 @@ allo/**/builds.json
 *.o
 *.so
 debug.pcm
+.DS_Store
