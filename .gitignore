@@ -6,3 +6,4 @@ allo/**/allonet.cache
 allo/**/builds.json
 *.o
 *.so
+debug.pcm
