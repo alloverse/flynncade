@@ -13,11 +13,11 @@ Yo. It's a VR arcade for Alloverse. Get it.
 
 ### Mac
 
-1. Install RetroArch from `https://www.retroarch.com/?page=platforms`
-2. Open RetroArch, go to `Load Core` > `Download Core`
+1. Install RetroArch from https://www.retroarch.com/?page=platforms
+2. Open RetroArch and navigate to "Load Core" > "Download Core"
 3. In the list, find and install the following cores: `libretro-nestopia`, `libretro-genesisplusgx` and `libretro-snes9x`
 4. Open the terminal, go to the `flynncade` folder and compile the C parts of this library by simply running: `make`
-5. `./allo/assist fetch` to get allonet
+5. Run `./allo/assist fetch` to get allonet
 
 ## Developing and running
 
