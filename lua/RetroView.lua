@@ -139,8 +139,14 @@ function RetroView:_environment(cmd, data)
         return true
     elseif cmd == 10 then -- RETRO_ENVIRONMENT_SET_PIXEL_FORMAT
         local fmt = ffi.cast("enum retro_pixel_format*", data)
-        print("Emulator requested video format", fmt[0])
-        return tonumber(fmt[0]) == 1 -- XRGB8888
+        local map = {
+            [0]= "rgb1555",
+            [1]= "xrgb8888",
+            [2]= "rgb565",
+        }
+        self.videoFormat = map[fmt[0]]
+        print("Emulator requested video format", self.videoFormat)
+        return true
     elseif cmd == 9 then -- RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY
         local sptr = ffi.cast("const char **", data)
         sptr[0] = "."
