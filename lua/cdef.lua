@@ -1414,4 +1414,10 @@ return [[
    
     ///////////// helper
     void core_log(enum retro_log_level level, const char *fmt, ...);
+
+    // returns the number of consumed samples, or 0 if we didn't have enough samples to fulfill dest_sample_count
+    size_t flynn_resample(
+      const int16_t *source, size_t max_frame_count, int source_samplerate, bool in_stereo,
+      int16_t *dest, size_t dest_frame_count, int dest_samplerate, bool out_stereo
+     );
    ]]
