@@ -95,7 +95,7 @@ function RetroView:loadGame(gamePath)
     self.info.data = data
     self.info.size = #data
     local ok = self.handle.retro_load_game(self.info)
-    assert(ok)
+    -- assert(ok)
 
     self.av = ffi.new("struct retro_system_av_info")
     self.handle.retro_get_system_av_info(self.av)
