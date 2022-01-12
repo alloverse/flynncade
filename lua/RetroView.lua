@@ -28,8 +28,10 @@ function RetroView:_init(bounds)
         self:addSubview(RetroMote(Bounds( 0.35, -0.3, 0.6,   0.2, 0.05, 0.1), 2))
     }
 
-    self:loadCore("nestopia")
-    self:loadGame("roms/NES/tmnt2/tmnt2.nes")
+    --self:loadCore("nestopia")
+    --self:loadGame("roms/NES/tmnt2/tmnt2.nes")
+    self:loadCore("snes9x")
+    self:loadGame("roms/SNES/supermetroid/supermetroid.sfc")
 end
 
 function os.system(cmd)
@@ -139,13 +141,14 @@ function RetroView:_environment(cmd, data)
         return true
     elseif cmd == 10 then -- RETRO_ENVIRONMENT_SET_PIXEL_FORMAT
         local fmt = ffi.cast("enum retro_pixel_format*", data)
-        local map = {
+        local fmtIndex = tonumber(fmt[0])
+        local indexToFormat = {
             [0]= "rgb1555",
-            [1]= "xrgb8888",
+            [1]= "bgra", -- ?? supposed to be xrgb8
             [2]= "rgb565",
         }
-        self.videoFormat = map[fmt[0]]
-        print("Emulator requested video format", self.videoFormat)
+        self.videoFormat = indexToFormat[fmtIndex]
+        print("Emulator requested video format", fmtIndex, "aka", self.videoFormat)
         return true
     elseif cmd == 9 then -- RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY
         local sptr = ffi.cast("const char **", data)
@@ -174,7 +177,7 @@ function RetroView:_video_refresh(data, width, height, pitch)
         self.trackId, 
         ffi.string(data, pitch*height), 
         width, height, 
-        "xrgb8",
+        self.videoFormat,
         pitch
     )
 end
