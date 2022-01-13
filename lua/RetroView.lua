@@ -22,6 +22,9 @@ function RetroView:_init(bounds)
     self.audiobuffer = ffi.new("int16_t[?]", self.sample_capacity)
     self.buffered_samples = 0
     self.audiodebug = io.open("debug.pcm", "wb")
+    self.elapsed_videotime = 0
+    self.elapsed_inaudiotime = 0
+    self.elapsed_outaudiotime = 0
 
     self.controllers = {
         self:addSubview(RetroMote(Bounds(-0.35, -0.3, 0.6,   0.2, 0.05, 0.1), 1)),
@@ -112,7 +115,7 @@ function RetroView:loadGame(gamePath)
 end
 
 function RetroView:getFps()
-    return self.av.timing.fps
+    return tonumber(self.av.timing.fps)
 end
 
 
@@ -125,6 +128,9 @@ end
 ----------------- running --------------------
 
 function RetroView:poll()
+    if not self.start_time then
+        self.start_time = self.app:clientTime()
+    end
     self.handle.retro_run()
     self:_sendBufferedAudio()
 end
@@ -132,7 +138,10 @@ end
 function RetroView:get_stats()
     return pretty.write({
         buffered_samples= self.buffered_samples,
-        
+        elapsed_realtime= self.app:clientTime() - self.start_time,
+        elapsed_videotime= self.elapsed_videotime,
+        elapsed_inaudiotime= self.elapsed_inaudiotime,
+        elapsed_outaudiotime= self.elapsed_outaudiotime,
     })
 end
 
@@ -173,6 +182,7 @@ function RetroView:_environment(cmd, data)
 end
 
 function RetroView:_video_refresh(data, width, height, pitch)
+    self.elapsed_videotime = self.elapsed_videotime + 1/self:getFps()
     if not self.trackId then
         return
     end
@@ -196,6 +206,7 @@ function RetroView:_audio_sample_batch(data, frames)
     local source_channel_count = 2
     local dest_channel_count = 1
     local dest_frames = (dest_samplerate/self.av.timing.sample_rate) * tonumber(frames) * 2 -- in case resampling requires multi-pass headroom
+    self.elapsed_inaudiotime = self.elapsed_inaudiotime + tonumber(frames)/tonumber(self.av.timing.sample_rate)
     --if self.audiodebug then self.audiodebug:write(ffi.string(data, frames*2*source_channel_count)) end
     if self.buffered_samples + dest_frames*dest_channel_count >= self.sample_capacity then
         print("audio buffer overload: ", self.buffered_samples, "+", frames, "in", self.sample_capacity)
@@ -233,6 +244,7 @@ function RetroView:_sendBufferedAudio()
     local out = ffi.string(left, 960*2)
 
     --if self.audiodebug then self.audiodebug:write(out) end
+    self.elapsed_outaudiotime = self.elapsed_outaudiotime + 960/48000
     self.app.client.client:send_audio(self.speaker.trackId, out)
 	
     if self.buffered_samples > 960 then
