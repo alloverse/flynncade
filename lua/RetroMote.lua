@@ -96,4 +96,8 @@ function RetroMotePart:onCapturedAxis(hand, handName, axisName, data)
     end
 end
 
+function RetroMotePart:onGrabEnded(hand)
+    self:markAsDirty("transform")
+end
+
 return RetroMote
