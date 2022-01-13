@@ -40,6 +40,10 @@ function newScreen(resolution)
             vertices= {corners.bl,      corners.br,      corners.tl,       corners.tr},
             uvs = {{0.0, 1.0},           {1.0, 1.0},          {0.0, 0.0},           {1.0, 0.0}},
             triangles= {{0, 1, 3}, {0, 3, 2}, {1, 0, 2}, {1, 2, 3}},
+        },
+        material = {
+            roughness = 0,
+            metalness = 1,
         }
     }
     return screen
