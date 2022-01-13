@@ -34,8 +34,8 @@ local emulator = tv:addSubview(RetroView(ui.Bounds.unit()))
 local controllers = emulator:addSubview(View())
 controllers.bounds:scale(5,5,5):move(0,5.6,-1.4)
 emulator.controllers = {
-    controllers:addSubview(RetroMote(Bounds(-0.2, -0.3, 0.6,   0.2, 0.05, 0.1), 1)),
-    controllers:addSubview(RetroMote(Bounds( 0.2, -0.3, 0.6,   0.2, 0.05, 0.1), 2))
+    controllers:addSubview(RetroMote(Bounds(-0.15, -0.3, 0.6,   0.2, 0.05, 0.1), 1)),
+    controllers:addSubview(RetroMote(Bounds( 0.15, -0.3, 0.6,   0.2, 0.05, 0.1), 2))
 }
 emulator.customSpecAttributes = {
     geometry = {
