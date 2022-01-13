@@ -210,9 +210,7 @@ function RetroView:_sendBufferedAudio()
     ffi.copy(left, self.audiobuffer, 960*2)
     
     self.buffered_samples = self.buffered_samples - 960
-    for i=0,tonumber(self.buffered_samples)-1 do
-        self.audiobuffer[i] = self.audiobuffer[960 + i]
-    end
+    ffi.copy(self.audiobuffer, self.audiobuffer + 960, self.buffered_samples*2)
 
     local out = ffi.string(left, 960*2)
 
