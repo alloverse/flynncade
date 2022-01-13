@@ -6,7 +6,7 @@ Yo. It's a VR arcade for Alloverse. Get it.
 
 1. Install RetroArch: `sudo add-apt-repository ppa:libretro/stable && sudo apt-get update && sudo apt-get install retroarch`
 2. Install the requires RetroArch cores: `sudo apt-get install libretro-nestopia libretro-genesisplusgx libretro-snes9x`
-3. Install `libswresample` and friends (only needed for build, not run): `sudo apt install libavcodec-dev libavformat-dev libswresample-dev`
+3. Install `libswresample` and friends (only needed for build, not run): `sudo apt install libavcodec-dev libavformat-dev libswresample-dev libswscale-dev`
 3. Compile the C parts of this library: `make`
 4. `./allo/assist fetch` to get allonet
 

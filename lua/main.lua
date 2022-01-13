@@ -1,11 +1,10 @@
-local RetroView = require("RetroView")
-
 local client = Client(
     arg[2], 
     "flynncade",
     allonet.create(true)
 )
-local app = App(client)
+
+app = App(client)
 
 assets = {
     quit = ui.Asset.File("images/quit.png"),
@@ -14,6 +13,8 @@ assets = {
     snesmote = ui.Asset.File("models/snesmote.glb"),
 }
 app.assetManager:add(assets)
+
+local RetroView = require("RetroView")
 
 local main = ui.View(Bounds(0.2, 1.1, -4.5,   1, 1, 1))
 main:setGrabbable(true)
