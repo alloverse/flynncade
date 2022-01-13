@@ -47,6 +47,33 @@ emulator.customSpecAttributes = {
     }
 }
 
+local quitButton = main:addSubview(
+    ui.Button(ui.Bounds{size=ui.Size(0.12,0.12,0.05)}:rotate(3.14,0,1,0):move( 0.22,1.95,-0.3))
+)
+quitButton:setDefaultTexture(assets.quit)
+quitButton.onActivated = function()
+    main:addPropertyAnimation(ui.PropertyAnimation{
+        path= "transform.matrix.scale",
+        from=   {1, 1, 1},
+        to= {0.01, 1, 1},
+        duration= 0.2,
+        easing="quadOut" 
+    })
+    app:scheduleAction(0.2, false, function() 
+        app:quit()
+    end)
+end
+
+main:doWhenAwake(function()
+    main:addPropertyAnimation(ui.PropertyAnimation{
+        path= "transform.matrix.scale",
+        to=   {1, 1, 1},
+        from= {0.01, 1, 1},
+        duration= 0.3,
+        easing="quadOut" 
+    })
+end)
+
 app:scheduleAction(1.0/emulator:getFps(), true, function()
     emulator:poll()
 end)
