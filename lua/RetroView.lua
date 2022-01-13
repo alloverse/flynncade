@@ -26,6 +26,7 @@ function RetroView:_init(bounds)
     self.elapsed_inaudiotime = 0
     self.elapsed_outaudiotime = 0
     self.soundVolume = 0.5
+    self.frameSkip = 1 -- 1=60fps, 2=30fps, etc
 
     --self:loadCore("nestopia")
     --self:loadGame("roms/NES/tmnt2/tmnt2.nes")
@@ -186,7 +187,7 @@ function RetroView:_video_refresh(data, width, height, pitch)
     end
     if self.frame_id == nil then self.frame_id = 0 end
     self.frame_id = self.frame_id + 1
-    if self.frame_id % 2 == 0 then return end
+    if self.frame_id % self.frameSkip > 0 then return end
 
     pitch = tonumber(pitch)
 
