@@ -10,10 +10,12 @@ local snesmote_right = app.assetManager:add(ui.Asset.File("models/snesmote-right
 local alloToDeviceIdMap = {
     ["hand/left-x"]= "y",
     ["hand/left-y"]= "x",
+    ["hand/left-thumbstick"] = "select",
     ["hand/left-trigger"]= "l",
     ["hand/left-menu"]= "start",
     ["hand/right-a"]= "a",
     ["hand/right-b"]= "b",
+    ["hand/right-thumbstick"] = "start",
     ["hand/right-trigger"]= "r",
 }
 
@@ -38,7 +40,7 @@ function RetroMote:_init(bounds, playerIndex)
 
     self.rightPart = RetroMotePart(Bounds(0.1, 0, 0, 0.1,0.1,0.1), snesmote_right)
     self.rightPart:setGrabbable(true, {
-      capture_controls= {"trigger",  "a", "b" },
+      capture_controls= {"trigger", "thumbstick", "a", "b" },
       target_hand_transform= mat4.identity()
     })
     self:addSubview(self.rightPart)
