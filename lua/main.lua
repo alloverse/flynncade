@@ -9,7 +9,7 @@ app = App(client)
 assets = {
     quit = ui.Asset.File("images/quit.png"),
     crt = ui.Asset.File("models/magnavox.glb"),
-    arcade = ui.Asset.File("models/arcade.glb"),
+    arcade = ui.Asset.File("models/220111-arcade.glb"),
 }
 app.assetManager:add(assets)
 
