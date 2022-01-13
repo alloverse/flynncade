@@ -26,11 +26,12 @@ app:scheduleAction(1/emulator:getFps(), true, function()
     emulator:poll()
 end)
 
-app:scheduleAction(5.0, true, function() 
+app:scheduleAction(1.0, true, function() 
     print("Network stats", app.client.client:get_stats())
+    print("Emulator stats", emulator:get_stats())
 end)
 
 app.mainView = main
 
 app:connect()
-app:run()
+app:run(emulator:getFps())

@@ -18,7 +18,7 @@ function RetroView:_init(bounds)
 
     self.speaker = self:addSubview(ui.Speaker())
 
-    self.sample_capacity = 960*8
+    self.sample_capacity = 960*32
     self.audiobuffer = ffi.new("int16_t[?]", self.sample_capacity)
     self.buffered_samples = 0
     self.audiodebug = io.open("debug.pcm", "wb")
@@ -126,6 +126,14 @@ end
 
 function RetroView:poll()
     self.handle.retro_run()
+    self:_sendBufferedAudio()
+end
+
+function RetroView:get_stats()
+    return pretty.write({
+        buffered_samples= self.buffered_samples,
+        
+    })
 end
 
 -------- libretro emulator callbacks -----------
@@ -170,6 +178,7 @@ function RetroView:_video_refresh(data, width, height, pitch)
     end
     if self.frame_id == nil then self.frame_id = 0 end
     self.frame_id = self.frame_id + 1
+    if self.frame_id % 2 == 0 then return end
 
     pitch = tonumber(pitch)
 
