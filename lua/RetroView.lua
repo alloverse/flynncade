@@ -16,7 +16,7 @@ class.RetroView(ui.VideoSurface)
 function RetroView:_init(bounds)
     self:super(bounds)
 
-    self.speaker = self:addSubview(ui.Speaker())
+    self.speaker = self:addSubview(ui.Speaker(Bounds(0, 0.3, 0.2, 0,0,0)))
 
     self.sample_capacity = 960*32
     self.audiobuffer = ffi.new("int16_t[?]", self.sample_capacity)
