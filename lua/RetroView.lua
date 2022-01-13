@@ -25,6 +25,7 @@ function RetroView:_init(bounds)
     self.elapsed_videotime = 0
     self.elapsed_inaudiotime = 0
     self.elapsed_outaudiotime = 0
+    self.soundVolume = 0.5
 
     --self:loadCore("nestopia")
     --self:loadGame("roms/NES/tmnt2/tmnt2.nes")
@@ -231,7 +232,9 @@ function RetroView:_sendBufferedAudio()
         return
     end
     local left = ffi.new("int16_t[960]")
-    ffi.copy(left, self.audiobuffer, 960*2)
+    for i=0,960-1 do
+        left[i] = self.audiobuffer[i] * self.soundVolume
+    end
     
     self.buffered_samples = self.buffered_samples - 960
     ffi.copy(self.audiobuffer, self.audiobuffer + 960, self.buffered_samples*2)
