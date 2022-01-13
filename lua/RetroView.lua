@@ -34,7 +34,9 @@ function RetroView:_init(bounds)
     --self:loadCore("nestopia")
     --self:loadGame("roms/NES/tmnt2/tmnt2.nes")
     self:loadCore("snes9x")
-    self:loadGame("roms/SNES/supermetroid/supermetroid.sfc")
+    self:loadGame("roms/SNES/sf2t/sf2t.sfc")
+    --self:loadCore("genesis_plus_gx")
+    --self:loadGame("roms/Genesis/sor3/sor3.smd")
 end
 
 function os.system(cmd)
