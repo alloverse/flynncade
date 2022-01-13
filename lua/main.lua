@@ -16,15 +16,15 @@ app.assetManager:add(assets)
 
 local RetroView = require("RetroView")
 
-local main = ui.View(Bounds(0.2, 1.1, -4.5,   1, 1, 1))
+local main = ui.View(Bounds(0.2, 0.1, -4.5,   1, 0.2, 1))
 main:setGrabbable(true)
 
 Bounds.unit = function ()
     return Bounds(0,0,0,1,1,1)
 end
 
-local tv = main:addSubview(ui.ModelView(Bounds.unit():scale(0.2,0.2,0.2), assets.arcade))
-tv.bounds:move(0,-0.5,0)
+local tv = main:addSubview(ui.ModelView(Bounds.unit():scale(0.3,0.3,0.3), assets.arcade))
+tv.bounds:move(0,0,0)
 local corners = {
     tl = {-1.2283, 5.7338, -0.49098},
     tr = {0.94936, 5.7338, -0.49098},
