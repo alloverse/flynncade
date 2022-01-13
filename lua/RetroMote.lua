@@ -29,14 +29,14 @@ function RetroMote:_init(bounds, playerIndex)
     self.playerIndex = playerIndex
     self.controllerStates = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
 
-    self.leftPart = RetroMotePart(Bounds(-0.1, 0, 0, 0.1,0.1,0.1), snesmote_left)
+    self.leftPart = RetroMotePart(Bounds(-0.05, 0, 0, 0.1,0.1,0.1), snesmote_left)
     self.leftPart:setGrabbable(true, {
       capture_controls= {"trigger", "thumbstick", "x", "y", "menu"},
       target_hand_transform= mat4.identity()
     })
     self:addSubview(self.leftPart)
 
-    self.rightPart = RetroMotePart(Bounds(0.1, 0, 0, 0.1,0.1,0.1), snesmote_right)
+    self.rightPart = RetroMotePart(Bounds(0.05, 0, 0, 0.1,0.1,0.1), snesmote_right)
     self.rightPart:setGrabbable(true, {
       capture_controls= {"trigger",  "a", "b" },
       target_hand_transform= mat4.identity()

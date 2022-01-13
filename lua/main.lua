@@ -10,7 +10,6 @@ assets = {
     quit = ui.Asset.File("images/quit.png"),
     crt = ui.Asset.File("models/magnavox.glb"),
     arcade = ui.Asset.File("models/arcade.glb"),
-    snesmote = ui.Asset.File("models/snesmote.glb"),
 }
 app.assetManager:add(assets)
 
@@ -32,6 +31,12 @@ local corners = {
     br = {0.94936, 4.1062, 0.41123}
 }
 local emulator = tv:addSubview(RetroView(ui.Bounds.unit()))
+local controllers = emulator:addSubview(View())
+controllers.bounds:scale(5,5,5):move(0,5.6,-1.4)
+emulator.controllers = {
+    controllers:addSubview(RetroMote(Bounds(-0.2, -0.3, 0.6,   0.2, 0.05, 0.1), 1)),
+    controllers:addSubview(RetroMote(Bounds( 0.2, -0.3, 0.6,   0.2, 0.05, 0.1), 2))
+}
 emulator.customSpecAttributes = {
     geometry = {
         type = "inline",
@@ -45,15 +50,6 @@ emulator.customSpecAttributes = {
 app:scheduleAction(1.0/emulator:getFps(), true, function()
     emulator:poll()
 end)
-
-local scale = 0.002
-
-emulator.controllers = {
-    emulator:addSubview(RetroMote(Bounds(-0.7, 4.3, 1.3,   0.2, 0.05, 0.1), 1)),
-    emulator:addSubview(RetroMote(Bounds( 0.7, 4.3, 1.3,   0.2, 0.05, 0.1), 2))
-}
-emulator.controllers[1]:addSubview(ui.ModelView(Bounds(0,0,0, 0.2,0.1,0.1):scale(scale,scale,scale):rotate(-3.14/2,1,0,0), assets.snesmote))
-emulator.controllers[2]:addSubview(ui.ModelView(Bounds(0,0,0, 0.2,0.1,0.1):scale(scale,scale,scale):rotate(-3.14/2,1,0,0), assets.snesmote))
 
 app:scheduleAction(5.0, true, function() 
     print("Network stats", app.client.client:get_stats())
