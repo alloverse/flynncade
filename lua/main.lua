@@ -13,7 +13,7 @@ assets = {
 }
 app.assetManager:add(assets)
 
-local RetroView = require("RetroView")
+local emulator = require("Emulator")
 
 local main = ui.View(Bounds(0.2, 0.1, -4.5,   1, 0.2, 1))
 main:setGrabbable(true)
@@ -30,22 +30,29 @@ local corners = {
     bl = {-1.2283, 4.1062, 0.41123},
     br = {0.94936, 4.1062, 0.41123}
 }
-local emulator = tv:addSubview(RetroView(ui.Bounds.unit()))
-local controllers = emulator:addSubview(View())
+
+function newScreen(resolution)
+    local screen = ui.VideoSurface(ui.Bounds.unit(), resolution)
+    screen.customSpecAttributes = {
+        geometry = {
+            type = "inline",
+            --   #bl                   #br                  #tl                   #tr
+            vertices= {corners.bl,      corners.br,      corners.tl,       corners.tr},
+            uvs = {{0.0, 1.0},           {1.0, 1.0},          {0.0, 0.0},           {1.0, 0.0}},
+            triangles= {{0, 1, 3}, {0, 3, 2}, {1, 0, 2}, {1, 2, 3}},
+        }
+    }
+    return screen
+end
+
+local emulator = Emulator(app)
+local controllers = tv:addSubview(View())
 controllers.bounds:scale(5,5,5):move(0,5.6,-1.4)
 emulator.controllers = {
     controllers:addSubview(RetroMote(Bounds(-0.15, -0.3, 0.6,   0.2, 0.05, 0.1), 1)),
     controllers:addSubview(RetroMote(Bounds( 0.15, -0.3, 0.6,   0.2, 0.05, 0.1), 2))
 }
-emulator.customSpecAttributes = {
-    geometry = {
-        type = "inline",
-              --   #bl                   #br                  #tl                   #tr
-        vertices= {corners.bl,      corners.br,      corners.tl,       corners.tr},
-        uvs=      {{0.0, 0.0},           {1.0, 0.0},          {0.0, 1.0},           {1.0, 1.0}},
-        triangles= {{0, 1, 3}, {0, 3, 2}, {1, 0, 2}, {1, 2, 3}},
-    }
-}
+emulator.speaker = tv:addSubview(ui.Speaker(Bounds(0, 0.3, 0.2, 0,0,0)))
 
 local quitButton = main:addSubview(
     ui.Button(ui.Bounds{size=ui.Size(0.12,0.12,0.05)}:rotate(3.14,0,1,0):move( 0.22,1.95,-0.3))
@@ -74,14 +81,58 @@ main:doWhenAwake(function()
     })
 end)
 
-app:scheduleAction(1.0/emulator:getFps(), true, function()
-    emulator:poll()
-end)
+local poller = nil
+function run(core, rom) 
+    if poller then poller:cancel() end
+    if emulator.screen then 
+        emulator.screen:removeFromSuperview()
+        emulator.screen = nil
+    end
+    emulator:loadCore(core)
+    emulator:loadGame(rom)
+    emulator.screen = tv:addSubview(newScreen(emulator.resolution))
 
-app:scheduleAction(2.0, true, function() 
+    poller = app:scheduleAction(1.0/emulator:getFps(), true, function()
+        emulator:poll()
+    end)
+end
+
+run("snes9x", "roms/SNES/sf2t/sf2t.sfc")
+-- run("nestopia", "roms/NES/tmnt2/tmnt2.nes")
+-- run("genesis_plus_gx", "roms/Genesis/sor3/sor3.smd")
+
+app:scheduleAction(5.0, true, function() 
     print("Network stats", app.client.client:get_stats())
     print("Emulator stats", emulator:get_stats())
 end)
+
+local coreMap = {
+    sfc = "snes9x",
+    nes = "nestopia",
+    smd = "genesis_plus_gx",
+}
+main.acceptedFileExtensions = {"png"}
+for k,v in pairs(coreMap) do table.insert(main.acceptedFileExtensions, k) end
+main.onFileDropped = function (self, filename, assetid)
+    local ext = assert(filename:match("^.+%.(.+)$"))
+
+    if ext == "png" then 
+        app.assetManager:load(assetid, function (name, asset)
+            app.assetManager:add(asset, true)
+            tv.texture = asset
+            tv:updateComponents()
+        end)
+    else
+        local core = assert(coreMap[ext])
+        app.assetManager:load(assetid, function (name, asset)
+            local file = io.open(filename, "wb")
+            file:write(asset:read())
+            file:close()
+            run(core, filename)
+        end)
+    end
+end
+
 
 app.mainView = main
 

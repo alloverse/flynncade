@@ -8,15 +8,12 @@ local RetroMote = require("RetroMote")
 
 ffi.cdef(require("cdef"))
 
-class.RetroView(ui.VideoSurface)
+Emulator = class.Emulator()
 
---------------- setup ------------------
-
-
-function RetroView:_init(bounds)
-    self:super(bounds)
-
-    self.speaker = self:addSubview(ui.Speaker(Bounds(0, 0.3, 0.2, 0,0,0)))
+function Emulator:_init(app)
+    self.app = app
+    self.speaker = nil
+    self.screen = nil
 
     self.sample_capacity = 960*32
     self.audiobuffer = ffi.new("int16_t[?]", self.sample_capacity)
@@ -27,13 +24,6 @@ function RetroView:_init(bounds)
     self.elapsed_outaudiotime = 0
     self.soundVolume = 0.5
     self.frameSkip = 1 -- 1=60fps, 2=30fps, etc
-
-    --self:loadCore("nestopia")
-    --self:loadGame("roms/NES/tmnt2/tmnt2.nes")
-    self:loadCore("snes9x")
-    self:loadGame("roms/SNES/sf2t/sf2t.sfc")
-    --self:loadCore("genesis_plus_gx")
-    --self:loadGame("roms/Genesis/sor3/sor3.smd")
 end
 
 function os.system(cmd)
@@ -64,7 +54,7 @@ function _loadCore(coreName)
     error("Core "..coreName.." not available anywhere :(")
 end
 
-function RetroView:loadCore(coreName)
+function Emulator:loadCore(coreName)
     self.handle = _loadCore(coreName)
     self.helper = ffi.load("lua/libhelper.so", false)
     assert(self.handle)
@@ -88,7 +78,7 @@ function RetroView:loadCore(coreName)
     self.handle.retro_init()
 end
 
-function RetroView:loadGame(gamePath)
+function Emulator:loadGame(gamePath)
     self.system = ffi.new("struct retro_system_info")
     self.handle.retro_get_system_info(self.system)
 
@@ -109,24 +99,16 @@ function RetroView:loadGame(gamePath)
         "\n\tVideo frame rate:", self.av.timing.fps,
         "\n\tAudio sample rate:", self.av.timing.sample_rate
     )
-    self:setResolution(self.av.geometry.base_width, self.av.geometry.base_height)
-    self:setVideoFormat("h264")
+    self.resolution = {self.av.geometry.base_width, self.av.geometry.base_height}
 end
 
-function RetroView:getFps()
+function Emulator:getFps()
     return tonumber(self.av.timing.fps)
-end
-
-
-function RetroView:specification()
-    local spec = VideoSurface.specification(self)
-    spec.geometry.uvs = {{0.0, 1.0},           {1.0, 1.0},          {0.0, 0.0},           {1.0, 0.0}}
-    return spec
 end
 
 ----------------- running --------------------
 
-function RetroView:poll()
+function Emulator:poll()
     if not self.start_time then
         self.start_time = self.app:clientTime()
     end
@@ -134,10 +116,10 @@ function RetroView:poll()
     self:_sendBufferedAudio()
 end
 
-function RetroView:get_stats()
+function Emulator:get_stats()
     return pretty.write({
         buffered_samples= self.buffered_samples,
-        elapsed_realtime= self.app:clientTime() - self.start_time,
+        elapsed_realtime= self.app:clientTime() - (self.start_time or 0),
         elapsed_videotime= self.elapsed_videotime,
         elapsed_inaudiotime= self.elapsed_inaudiotime,
         elapsed_outaudiotime= self.elapsed_outaudiotime,
@@ -146,7 +128,7 @@ end
 
 -------- libretro emulator callbacks -----------
 
-function RetroView:_environment(cmd, data)
+function Emulator:_environment(cmd, data)
     if cmd == 27 then -- RETRO_ENVIRONMENT_GET_LOG_INTERFACE
         local cb = ffi.cast("struct retro_log_callback*", data)
         cb.log = self.helper.core_log
@@ -180,9 +162,9 @@ function RetroView:_environment(cmd, data)
     return false
 end
 
-function RetroView:_video_refresh(data, width, height, pitch)
+function Emulator:_video_refresh(data, width, height, pitch)
     self.elapsed_videotime = self.elapsed_videotime + 1/self:getFps()
-    if not self.trackId then
+    if not self.screen then
         return
     end
     if self.frame_id == nil then self.frame_id = 0 end
@@ -190,17 +172,16 @@ function RetroView:_video_refresh(data, width, height, pitch)
     if self.frame_id % self.frameSkip > 0 then return end
 
     pitch = tonumber(pitch)
-
-    self.app.client.client:send_video(
-        self.trackId, 
+    self.screen:sendFrame(
         ffi.string(data, pitch*height), 
         width, height, 
         self.videoFormat,
         pitch
     )
+
 end
 
-function RetroView:_audio_sample_batch(data, frames)
+function Emulator:_audio_sample_batch(data, frames)
     local dest_samplerate = 48000
     local source_channel_count = 2
     local dest_channel_count = 1
@@ -225,7 +206,7 @@ function RetroView:_audio_sample_batch(data, frames)
 end
 
 local x = 0
-function RetroView:_sendBufferedAudio()
+function Emulator:_sendBufferedAudio()
     if not self.speaker.trackId then
         return
     end
@@ -244,18 +225,18 @@ function RetroView:_sendBufferedAudio()
 
     --if self.audiodebug then self.audiodebug:write(out) end
     self.elapsed_outaudiotime = self.elapsed_outaudiotime + 960/48000
+    
     self.app.client.client:send_audio(self.speaker.trackId, out)
-	
     if self.buffered_samples > 960 then
         self:_sendBufferedAudio()
     end
 end
 
-function RetroView:_input_poll()
+function Emulator:_input_poll()
     -- todo
 end
 
-function RetroView:_input_state(port, device, index, id)
+function Emulator:_input_state(port, device, index, id)
     if port >= #self.controllers then
         return false
     end
@@ -265,4 +246,4 @@ end
 
 
 
-return RetroView
+return Emulator
