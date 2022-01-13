@@ -9,20 +9,45 @@ app = App(client)
 assets = {
     quit = ui.Asset.File("images/quit.png"),
     crt = ui.Asset.File("models/magnavox.glb"),
+    arcade = ui.Asset.File("models/arcade.glb"),
 }
 app.assetManager:add(assets)
 
 local RetroView = require("RetroView")
 
-local main = ui.View(Bounds(0.2, 1.1, -4.5,   1, 1, 1))
+local main = ui.View(Bounds(0.2, 0.1, -4.5,   1, 0.2, 1))
 main:setGrabbable(true)
 
-local tv = main:addSubview(ui.ModelView(Bounds(-1.32,0,0,  1,1,1):rotate(-3.14/2, 0,1,0), assets.crt))
+Bounds.unit = function ()
+    return Bounds(0,0,0,1,1,1)
+end
 
-local background = main:addSubview(ui.Surface(Bounds(0, 0.05, -0.01,   0.80, 0.50, 0.01)))
-background:setColor({0,0,0,1})
-local emulator = main:addSubview(RetroView(Bounds(0,0.05,0,   0.65, 0.50, 0.01)))
-app:scheduleAction(1/emulator:getFps(), true, function()
+local tv = main:addSubview(ui.ModelView(Bounds.unit():scale(0.3,0.3,0.3), assets.arcade))
+tv.bounds:move(0,0,0)
+local corners = {
+    tl = {-1.2283, 5.7338, -0.49098},
+    tr = {0.94936, 5.7338, -0.49098},
+    bl = {-1.2283, 4.1062, 0.41123},
+    br = {0.94936, 4.1062, 0.41123}
+}
+local emulator = tv:addSubview(RetroView(ui.Bounds.unit()))
+local controllers = emulator:addSubview(View())
+controllers.bounds:scale(5,5,5):move(0,5.6,-1.4)
+emulator.controllers = {
+    controllers:addSubview(RetroMote(Bounds(-0.2, -0.3, 0.6,   0.2, 0.05, 0.1), 1)),
+    controllers:addSubview(RetroMote(Bounds( 0.2, -0.3, 0.6,   0.2, 0.05, 0.1), 2))
+}
+emulator.customSpecAttributes = {
+    geometry = {
+        type = "inline",
+              --   #bl                   #br                  #tl                   #tr
+        vertices= {corners.bl,      corners.br,      corners.tl,       corners.tr},
+        uvs=      {{0.0, 0.0},           {1.0, 0.0},          {0.0, 1.0},           {1.0, 1.0}},
+        triangles= {{0, 1, 3}, {0, 3, 2}, {1, 0, 2}, {1, 2, 3}},
+    }
+}
+
+app:scheduleAction(1.0/emulator:getFps(), true, function()
     emulator:poll()
 end)
 
