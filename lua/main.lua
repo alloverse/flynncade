@@ -111,9 +111,12 @@ local coreMap = {
     nes = "nestopia",
     smd = "genesis_plus_gx",
 }
-main.acceptedFileExtensions = {"png"}
-for k,v in pairs(coreMap) do table.insert(main.acceptedFileExtensions, k) end
-main.onFileDropped = function (self, filename, assetid)
+
+local dropTarget = main:addSubview(View(ui.Bounds.unit():scale(0.7, 0.5, 0.05):rotate(-3.14/6, 1, 0, 0):move(0,1.4,0.0)))
+dropTarget:setPointable(true)
+dropTarget.acceptedFileExtensions = {"png"}
+for k,v in pairs(coreMap) do table.insert(dropTarget.acceptedFileExtensions, k) end
+dropTarget.onFileDropped = function (self, filename, assetid)
     local ext = assert(filename:match("^.+%.(.+)$"))
 
     if ext == "png" then 
