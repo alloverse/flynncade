@@ -130,6 +130,7 @@ end
 
 local coreMap = {
     sfc = "snes9x",
+    smc = "snes9x",
     nes = "nestopia",
     smd = "genesis_plus_gx",
 }
