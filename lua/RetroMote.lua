@@ -76,7 +76,7 @@ function RetroMotePart:onCapturedAxis(hand, handName, axisName, data)
         if y > 0.1 then 
             self.superview.controllerStates[up] = true 
             self.superview.controllerStates[down] = false
-        elseif y < -0.1 then
+        elseif y < -0.2 then
             self.superview.controllerStates[up] = false
             self.superview.controllerStates[down] = true
         else
@@ -86,7 +86,7 @@ function RetroMotePart:onCapturedAxis(hand, handName, axisName, data)
         if x > 0.1 then 
             self.superview.controllerStates[left] = false
             self.superview.controllerStates[right] = true
-        elseif x < -0.1 then
+        elseif x < -0.2 then
             self.superview.controllerStates[left] = true 
             self.superview.controllerStates[right] = false
         else

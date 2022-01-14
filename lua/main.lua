@@ -14,8 +14,9 @@ assets = {
 app.assetManager:add(assets)
 
 local RetroView = require("RetroView")
+local GameBrowser = require("GameBrowser")
 
-local main = ui.View(Bounds(0.2, 0.1, -4.5,   1, 0.2, 1))
+local main = ui.View(Bounds(10, 0.1, -4.5,   1, 0.2, 1))
 main:setGrabbable(true)
 
 Bounds.unit = function ()
@@ -46,6 +47,21 @@ emulator.customSpecAttributes = {
         triangles= {{0, 1, 3}, {0, 3, 2}, {1, 0, 2}, {1, 2, 3}},
     }
 }
+
+
+local menuButton = tv:addSubview(
+    ui.Button(ui.Bounds{size=ui.Size(0.5,0.5,0.5)}:move( -0.1, 2.6, 1.3))
+)
+menuButton:setColor({1,1,1,1})
+menuButton.onActivated = function(hand)
+    -- TODO: If the browser is already open, close it.
+    print("=======================")
+    print("Opening Game Browser...")
+    print("=======================")
+    local gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05)}, emulator)
+    main:addSubview(gameBrowser)
+end
+
 
 app:scheduleAction(1.0/emulator:getFps(), true, function()
     emulator:poll()

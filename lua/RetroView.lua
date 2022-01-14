@@ -28,10 +28,10 @@ function RetroView:_init(bounds)
     self.soundVolume = 0.5
     self.frameSkip = 1 -- 1=60fps, 2=30fps, etc
 
-    --self:loadCore("nestopia")
-    --self:loadGame("roms/NES/tmnt2/tmnt2.nes")
-    self:loadCore("snes9x")
-    self:loadGame("roms/SNES/sf2t/sf2t.sfc")
+    self:loadCore("nestopia")
+    self:loadGame("roms/NES/tmnt2/tmnt2.nes")
+    -- self:loadCore("snes9x")
+    -- self:loadGame("roms/SNES/sf2t/sf2t.sfc")
     --self:loadCore("genesis_plus_gx")
     --self:loadGame("roms/Genesis/sor3/sor3.smd")
 end
