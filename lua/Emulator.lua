@@ -55,6 +55,7 @@ function _loadCore(coreName)
 end
 
 function Emulator:loadCore(coreName)
+    self.coreName = coreName
     self.handle = _loadCore(coreName)
     self.helper = ffi.load("lua/libhelper.so", false)
     assert(self.handle)
@@ -109,12 +110,17 @@ function Emulator:fetchGeometry()
         "\n\tVideo frame rate:", self.av.timing.fps,
         "\n\tAudio sample rate:", self.av.timing.sample_rate
     )
-    self.resolution = {self.av.geometry.max_width, self.av.geometry.max_height}
-    if self.screen then
-        self.screen:setCropDimensions(
-            self.av.geometry.base_width/self.av.geometry.max_width,
-            self.av.geometry.base_height/self.av.geometry.max_height
-        )
+    if self.coreName == "snes9x" then
+        -- ?? for some reason using max_ doesn't work on snes9x, ffmpeg gets mad
+        self.resolution = {self.av.geometry.base_width, self.av.geometry.base_height}
+    else
+        self.resolution = {self.av.geometry.max_width, self.av.geometry.max_height}
+        if self.screen then
+            self.screen:setCropDimensions(
+                self.av.geometry.base_width/self.av.geometry.max_width,
+                self.av.geometry.base_height/self.av.geometry.max_height
+            )
+        end
     end
 end
 
