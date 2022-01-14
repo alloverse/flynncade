@@ -31,6 +31,28 @@ local corners = {
     br = {0.94936, 4.1062, 0.41123}
 }
 
+local helpPlate = main:addSubview(ui.Surface(ui.Bounds(-0.048, 1.02, 0.5,   0.65, 0.12, 0.05)))
+helpPlate:setColor({0.4,0.4,0.4,1.0})
+helpPlate:addSubview(ui.Label{
+    bounds= ui.Bounds(0, 0.05, 0,  0.4, 0.025, 0.01),
+    text= "How to play",
+    color= {0.5, 0.1, 0.1, 1.0},
+    halign="center",
+})
+helpPlate:addSubview(ui.Label{
+    bounds= ui.Bounds(-0.09, 0.00, 0,  0.4, 0.015, 0.01),
+    text= "VR: Grab the two gamepad parts.\n  Left stick   ABXY  Triggers  Sticks\n  D-pad        ABYX   LR           Select/Start",
+    color= {0.5, 0.1, 0.1, 1.0},
+    halign="left",
+})
+helpPlate:addSubview(ui.Label{
+    bounds= ui.Bounds(0.24, 0.00, 0,  0.4, 0.015, 0.01),
+    text= "Desktop: Press 'Use keyboard'.\n WASD     IJKL      UO    Tab       Enter\n D-pad      YXBA   LR     Select   Start",
+    color= {0.5, 0.1, 0.1, 1.0},
+    halign="left",
+})
+
+
 function newScreen(resolution)
     local screen = ui.VideoSurface(ui.Bounds.unit(), resolution)
     screen.customSpecAttributes = {
@@ -54,7 +76,7 @@ local controllers = tv:addSubview(View())
 controllers.bounds:scale(5,5,5):move(0,5.6,-1.4)
 emulator.controllers = {
     controllers:addSubview(RetroMote(Bounds(-0.15, -0.35, 0.6,   0.2, 0.05, 0.1), 1)),
-    controllers:addSubview(RetroMote(Bounds( 0.08, -0.35, 0.6,   0.2, 0.05, 0.1), 2))
+    controllers:addSubview(RetroMote(Bounds( 0.087, -0.35, 0.6,   0.2, 0.05, 0.1), 2))
 }
 emulator.speaker = tv:addSubview(ui.Speaker(Bounds(0, 0.3, 0.2, 0,0,0)))
 
