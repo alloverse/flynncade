@@ -101,7 +101,6 @@ end
 function RetroMote:onKeyDown(code, scancode, repetition)
     if repetition then return end
     local retrobutton = keebToDeviceIdMap[code]
-    print("pressed", code, "which corresponds to", retrobutton)
     if not retrobutton then return end
     local buttonId = tablex.find(retroDeviceIdMap, retrobutton)
     self.controllerStates[buttonId] = true
@@ -132,7 +131,6 @@ class.RetroMotePart(ui.ModelView)
 function RetroMotePart:onCapturedButtonPressed(hand, handName, buttonName)
     local alloname = handName.."-"..buttonName
     local retrobutton = alloToDeviceIdMap[alloname]
-    print("pressed", alloname, "which corresponds to", retrobutton)
     if not retrobutton then return end
     local buttonId = tablex.find(retroDeviceIdMap, retrobutton)
     self.superview.controllerStates[buttonId] = true
