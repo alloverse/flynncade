@@ -91,19 +91,31 @@ function Emulator:loadGame(gamePath)
     local ok = self.handle.retro_load_game(self.info)
     assert(ok)
 
-    self.av = ffi.new("struct retro_system_av_info")
-    self.handle.retro_get_system_av_info(self.av)
-    print(
-        "Emulator AV info:\n\tVideo dimensions:", 
-        self.av.geometry.base_width, "x", self.av.geometry.base_height,
-        "\n\tVideo frame rate:", self.av.timing.fps,
-        "\n\tAudio sample rate:", self.av.timing.sample_rate
-    )
-    self.resolution = {self.av.geometry.base_width, self.av.geometry.base_height}
+    self:fetchGeometry()
 end
 
 function Emulator:getFps()
     return tonumber(self.av.timing.fps)
+end
+
+function Emulator:fetchGeometry()
+    self.av = ffi.new("struct retro_system_av_info")
+    self.handle.retro_get_system_av_info(self.av)
+    print(
+        "Emulator AV info:\n\tBase video dimensions:", 
+        self.av.geometry.base_width, "x", self.av.geometry.base_height,
+        "\n\tMax video dimensions:",
+        self.av.geometry.max_width, "x", self.av.geometry.max_height,
+        "\n\tVideo frame rate:", self.av.timing.fps,
+        "\n\tAudio sample rate:", self.av.timing.sample_rate
+    )
+    self.resolution = {self.av.geometry.max_width, self.av.geometry.max_height}
+    if self.screen then
+        self.screen:setCropDimensions(
+            self.av.geometry.base_width/self.av.geometry.max_width,
+            self.av.geometry.base_height/self.av.geometry.max_height
+        )
+    end
 end
 
 ----------------- running --------------------
@@ -155,6 +167,14 @@ function Emulator:_environment(cmd, data)
     elseif cmd == 31 then -- RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY
         local sptr = ffi.cast("const char **", data)
         sptr[0] = "."
+        return true
+    elseif cmd == 32 then -- RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO
+        print("System av info changed")
+        return false
+    elseif cmd == 37 then -- RETRO_ENVIRONMENT_SET_GEOMETRY
+        local geometry = ffi.cast("struct retro_game_geometry*", data)
+        print("New geometry")
+        self:fetchGeometry()
         return true
     end
 

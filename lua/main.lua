@@ -55,19 +55,24 @@ helpPlate:addSubview(ui.Label{
 
 function newScreen(resolution)
     local screen = ui.VideoSurface(ui.Bounds.unit(), resolution)
-    screen.customSpecAttributes = {
-        geometry = {
-            type = "inline",
-            --   #bl                   #br                  #tl                   #tr
-            vertices= {corners.bl,      corners.br,      corners.tl,       corners.tr},
-            uvs = {{0.0, 1.0},           {1.0, 1.0},          {0.0, 0.0},           {1.0, 0.0}},
-            triangles= {{0, 1, 3}, {0, 3, 2}, {1, 0, 2}, {1, 2, 3}},
-        },
-        material = {
-            roughness = 0,
-            metalness = 1,
-        }
-    }
+    screen.specification = function()
+        local spec = ui.VideoSurface.specification(screen)
+        table.merge(spec, {
+            geometry = {
+                type = "inline",
+                --   #bl                  #br                         #tl               #tr
+                vertices= {corners.bl,    corners.br,                 corners.tl,       corners.tr},
+                uvs = {{0.0, screen.uvh}, {screen.uvw, screen.uvh},   {0.0, 0.0},       {screen.uvw, 0.0}},
+                triangles= {{0, 1, 3}, {0, 3, 2}, {1, 0, 2}, {1, 2, 3}},
+            },
+            material = {
+                roughness = 0,
+                metalness = 1,
+            }
+        })
+        return spec
+    end
+
     return screen
 end
 
