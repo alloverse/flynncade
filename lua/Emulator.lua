@@ -24,6 +24,7 @@ function Emulator:_init(app)
     self.elapsed_outaudiotime = 0
     self.soundVolume = 0.5
     self.frameSkip = 1 -- 1=60fps, 2=30fps, etc
+    self.onScreenSetup = function (resulution, crop) assert("assign onScreenSetup") end
 end
 
 function os.system(cmd)
@@ -55,6 +56,7 @@ function _loadCore(coreName)
 end
 
 function Emulator:loadCore(coreName)
+    if coreName == self.coreName then return end
     self.coreName = coreName
     self.handle = _loadCore(coreName)
     self.helper = ffi.load("lua/libhelper.so", false)
@@ -122,6 +124,7 @@ function Emulator:fetchGeometry()
             )
         end
     end
+    self.onScreenSetup(self.resolution, self.cropDimensions)
 end
 
 ----------------- running --------------------

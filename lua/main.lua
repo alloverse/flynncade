@@ -53,8 +53,10 @@ helpPlate:addSubview(ui.Label{
 })
 
 
-function newScreen(resolution)
+function newScreen(resolution, cropDimensions)
     local screen = ui.VideoSurface(ui.Bounds.unit(), resolution)
+    screen.uvw = cropDimensions and cropDimensions[1] or 1.0
+    screen.uvh = cropDimensions and cropDimensions[2] or 1.0
     screen.specification = function()
         local spec = ui.VideoSurface.specification(screen)
         table.merge(spec, {
@@ -84,6 +86,19 @@ emulator.controllers = {
     controllers:addSubview(RetroMote(Bounds( 0.087, -0.35, 0.6,   0.2, 0.05, 0.1), 2))
 }
 emulator.speaker = tv:addSubview(ui.Speaker(Bounds(0, 0.3, 0.2, 0,0,0)))
+emulator.onScreenSetup = function (resolution, crop)
+    if emulator.screen and emulator.screen.resolution[1] == resolution[1] and emulator.screen.resolution[2] == resolution[2] then
+        if crop then 
+            emulator.screen.setCropDimensions(crop[1], crop[2])
+        end
+        return
+    end
+    if emulator.screen then 
+        emulator.screen:removeFromSuperview()
+        emulator.screen = nil
+    end
+    emulator.screen = tv:addSubview(newScreen(resolution, crop))
+end
 
 local quitButton = main:addSubview(
     ui.Button(ui.Bounds{size=ui.Size(0.12,0.12,0.05)}:rotate(3.14,0,1,0):move( 0.22,1.95,-0.3))
@@ -115,13 +130,8 @@ end)
 local poller = nil
 function run(core, rom) 
     if poller then poller:cancel() end
-    if emulator.screen then 
-        emulator.screen:removeFromSuperview()
-        emulator.screen = nil
-    end
     emulator:loadCore(core)
     emulator:loadGame(rom)
-    emulator.screen = tv:addSubview(newScreen(emulator.resolution))
 
     poller = app:scheduleAction(1.0/emulator:getFps(), true, function()
         emulator:poll()
