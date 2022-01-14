@@ -53,8 +53,8 @@ local emulator = Emulator(app)
 local controllers = tv:addSubview(View())
 controllers.bounds:scale(5,5,5):move(0,5.6,-1.4)
 emulator.controllers = {
-    controllers:addSubview(RetroMote(Bounds(-0.15, -0.3, 0.6,   0.2, 0.05, 0.1), 1)),
-    controllers:addSubview(RetroMote(Bounds( 0.15, -0.3, 0.6,   0.2, 0.05, 0.1), 2))
+    controllers:addSubview(RetroMote(Bounds(-0.15, -0.35, 0.6,   0.2, 0.05, 0.1), 1)),
+    controllers:addSubview(RetroMote(Bounds( 0.08, -0.35, 0.6,   0.2, 0.05, 0.1), 2))
 }
 emulator.speaker = tv:addSubview(ui.Speaker(Bounds(0, 0.3, 0.2, 0,0,0)))
 
