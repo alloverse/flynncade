@@ -128,20 +128,31 @@ function run(core, rom)
     end)
 end
 
-run("snes9x", "roms/SNES/sf2t/sf2t.sfc")
--- run("nestopia", "roms/NES/tmnt2/tmnt2.nes")
--- run("genesis_plus_gx", "roms/Genesis/sor3/sor3.smd")
+local coreMap = {
+    sfc = "snes9x",
+    nes = "nestopia",
+    smd = "genesis_plus_gx",
+}
+
+function runGame(filename)
+    local ext = assert(filename:match("^.+%.(.+)$"))
+    local core = assert(coreMap[ext])
+    run(core, filename)
+end
 
 app:scheduleAction(5.0, true, function() 
     print("Network stats", app.client.client:get_stats())
     print("Emulator stats", emulator:get_stats())
 end)
 
-local coreMap = {
-    sfc = "snes9x",
-    nes = "nestopia",
-    smd = "genesis_plus_gx",
-}
+--local defaultGame = "roms/SNES/sf2t/sf2t.sfc"
+-- local defaultGame = "roms/NES/tmnt2/tmnt2.nes"
+local defaultGame = "roms/Genesis/sor3/sor3.smd"
+if #arg > 2 then
+    defaultGame = arg[3]
+end
+runGame(defaultGame)
+
 
 local dropTarget = main:addSubview(View(ui.Bounds.unit():scale(0.7, 0.5, 0.05):rotate(-3.14/6, 1, 0, 0):move(0,1.4,0.0)))
 dropTarget:setPointable(true)
