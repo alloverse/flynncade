@@ -233,12 +233,12 @@ run(defaultGame)
 
 local dropTarget = main:addSubview(View(ui.Bounds.unit():scale(0.7, 0.5, 0.05):rotate(-3.14/6, 1, 0, 0):move(0,1.4,0.0)))
 dropTarget:setPointable(true)
-dropTarget.acceptedFileExtensions = {"png"}
+dropTarget.acceptedFileExtensions = {"png", "jpg", "jpeg"}
 for k,v in pairs(Emulator.coreMap) do table.insert(dropTarget.acceptedFileExtensions, k) end
 dropTarget.onFileDropped = function (self, filename, assetid)
     local ext = assert(filename:match("^.+%.(.+)$"))
 
-    if ext == "png" then
+    if ext == "png" or ext == "jpg" or ext == "jpeg" then 
         app.assetManager:load(assetid, function (name, asset)
             app.assetManager:add(asset, true)
             tv.texture = asset
