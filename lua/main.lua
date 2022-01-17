@@ -215,7 +215,6 @@ function run(rom)
     end)
 end
 
-
 app:scheduleAction(5.0, true, function() 
     print("Network stats", app.client.client:get_stats())
     print("Emulator stats", emulator:get_stats())
