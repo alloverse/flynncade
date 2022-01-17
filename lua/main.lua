@@ -13,7 +13,8 @@ assets = {
 }
 app.assetManager:add(assets)
 
-local emulator = require("Emulator")
+local Emulator = require("Emulator")
+local GameBrowser = require("GameBrowser")
 
 local main = ui.View(Bounds(4, 0.1, -3,   1, 0.2, 1))
 main:setGrabbable(true)
@@ -21,6 +22,8 @@ main:setGrabbable(true)
 Bounds.unit = function ()
     return Bounds(0,0,0,1,1,1)
 end
+
+local emulator = Emulator(app)
 
 local tv = main:addSubview(ui.ModelView(Bounds.unit():scale(0.3,0.3,0.3), assets.arcade))
 tv.bounds:move(0,0,0)
@@ -93,7 +96,6 @@ function newScreen(resolution, cropDimensions)
     return screen
 end
 
-local emulator = Emulator(app)
 local controllers = tv:addSubview(View())
 controllers.bounds:scale(5,5,5):move(0,5.6,-1.4)
 emulator.controllers = {

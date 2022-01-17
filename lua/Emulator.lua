@@ -82,6 +82,8 @@ function Emulator:loadCore(coreName)
 end
 
 function Emulator:loadGame(gamePath)
+    self.gamePath = gamePath
+
     self.system = ffi.new("struct retro_system_info")
     self.handle.retro_get_system_info(self.system)
 
@@ -95,6 +97,10 @@ function Emulator:loadGame(gamePath)
     assert(ok)
 
     self:fetchGeometry()
+end
+
+function Emulator:restart()
+  self:loadGame(self.gamePath)
 end
 
 function Emulator:getFps()
