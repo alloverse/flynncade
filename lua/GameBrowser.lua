@@ -41,7 +41,7 @@ function GameBrowser:_init(bounds, emulator, app)
 end
 
 function GameBrowser:_addSettingsButtons()
-  local quitButton = ui.Surface(ui.Bounds(0, -.2, 0.01,  0.2, 0.2, 0.01));
+  local quitButton = ui.Surface(ui.Bounds(0, 0.4, 0.01,  0.2, 0.2, 0.01));
   
   quitButton:setColor({0, 0, 0, 1})
   quitButton:setTexture(assets.quit)
@@ -56,7 +56,7 @@ function GameBrowser:_addSettingsButtons()
   mainView:addSubview(quitButton)
 
 
-  local restartButton = ui.Surface(ui.Bounds(0.2, -.2, 0.01,  0.2, 0.2, 0.01));
+  local restartButton = ui.Surface(ui.Bounds(0.2, 0.4, 0.01,  0.2, 0.2, 0.01));
   
   restartButton:setColor({0, 0, 0, 1})
   restartButton:setTexture(assets.restart)
