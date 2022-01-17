@@ -66,7 +66,7 @@ menuButton.onActivated = function(hand)
     print("=======================")
     print("Opening Game Browser...")
     print("=======================")
-    local gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05)}, emulator, app)
+    local gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05), pose=ui.Pose(1.5, 1.5, 0)}, emulator, app)
     main:addSubview(gameBrowser)
 end
 
