@@ -16,7 +16,7 @@ app.assetManager:add(assets)
 local RetroView = require("RetroView")
 local GameBrowser = require("GameBrowser")
 
-local main = ui.View(Bounds(10, 0.1, -4.5,   1, 0.2, 1))
+local main = ui.View(Bounds(4, 0.1, -3,   1, 0.2, 1))
 main:setGrabbable(true)
 
 Bounds.unit = function ()
@@ -55,10 +55,11 @@ local menuButton = tv:addSubview(
 menuButton:setColor({1,1,1,1})
 menuButton.onActivated = function(hand)
     -- TODO: If the browser is already open, close it.
+
     print("=======================")
     print("Opening Game Browser...")
     print("=======================")
-    local gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05)}, emulator)
+    local gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05)}, emulator, app)
     main:addSubview(gameBrowser)
 end
 
