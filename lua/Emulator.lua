@@ -22,14 +22,14 @@ function Emulator:_init(app)
     self.elapsed_videotime = 0
     self.elapsed_inaudiotime = 0
     self.elapsed_outaudiotime = 0
-    self.soundVolume = 0.5
+    self.soundVolume = 0.1
     self.frameSkip = 1 -- 1=60fps, 2=30fps, etc
     self.onScreenSetup = function (resulution, crop) assert("assign onScreenSetup") end
 end
 
 function os.system(cmd)
     local f = assert(io.popen(cmd, 'r'))
-    local s = assert(f:read('*a'))
+    local s = assert(f:read('*l'))
     f:close()
     return s:match("^%s*(.-)%s*$")
   end
@@ -112,19 +112,11 @@ function Emulator:fetchGeometry()
         "\n\tVideo frame rate:", self.av.timing.fps,
         "\n\tAudio sample rate:", self.av.timing.sample_rate
     )
-    if self.coreName == "snes9x" then
-        -- ?? for some reason using max_ doesn't work on snes9x, ffmpeg gets mad
-        self.resolution = {self.av.geometry.base_width, self.av.geometry.base_height}
-    else
-        self.resolution = {self.av.geometry.max_width, self.av.geometry.max_height}
-        if self.screen then
-            self.screen:setCropDimensions(
-                self.av.geometry.base_width/self.av.geometry.max_width,
-                self.av.geometry.base_height/self.av.geometry.max_height
-            )
-        end
-    end
-    self.onScreenSetup(self.resolution, self.cropDimensions)
+
+    self.resolution = {self.av.geometry.base_width, self.av.geometry.base_height}
+    -- self.resolution = {self.av.geometry.max_width, self.av.geometry.max_height}
+    
+    self.onScreenSetup({self.av.geometry.base_width, self.av.geometry.base_height}, {self.av.geometry.max_width, self.av.geometry.max_height})
 end
 
 ----------------- running --------------------

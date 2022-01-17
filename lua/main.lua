@@ -55,8 +55,6 @@ helpPlate:addSubview(ui.Label{
 
 function newScreen(resolution, cropDimensions)
     local screen = ui.VideoSurface(ui.Bounds.unit(), resolution)
-    screen.uvw = cropDimensions and cropDimensions[1] or 1.0
-    screen.uvh = cropDimensions and cropDimensions[2] or 1.0
     screen.specification = function()
         local spec = ui.VideoSurface.specification(screen)
         table.merge(spec, {
@@ -86,18 +84,21 @@ emulator.controllers = {
     controllers:addSubview(RetroMote(Bounds( 0.087, -0.35, 0.6,   0.2, 0.05, 0.1), 2))
 }
 emulator.speaker = tv:addSubview(ui.Speaker(Bounds(0, 0.3, 0.2, 0,0,0)))
-emulator.onScreenSetup = function (resolution, crop)
-    if emulator.screen and emulator.screen.resolution[1] == resolution[1] and emulator.screen.resolution[2] == resolution[2] then
-        if crop then 
-            emulator.screen.setCropDimensions(crop[1], crop[2])
+emulator.onScreenSetup = function (resolution, resmax)
+    -- the res we want the screen to be
+    local res = resmax
+
+    if emulator.screen then
+        -- if res is differrent from the current screen we setup a new one.
+        if emulator.screen.resolution[1] ~= res[1] and emulator.screen.resolution[2] ~= res[2] then
+            emulator.screen:removeFromSuperview()
+            emulator.screen = nil
         end
-        return
     end
-    if emulator.screen then 
-        emulator.screen:removeFromSuperview()
-        emulator.screen = nil
+
+    if not emulator.screen then 
+        emulator.screen = tv:addSubview(newScreen(res))
     end
-    emulator.screen = tv:addSubview(newScreen(resolution, crop))
 end
 
 local quitButton = main:addSubview(
@@ -146,7 +147,9 @@ local coreMap = {
 }
 
 function runGame(filename)
+    print("rungame",filename)
     local ext = assert(filename:match("^.+%.(.+)$"))
+    print("rungame",ext)
     local core = assert(coreMap[ext])
     run(core, filename)
 end
@@ -179,12 +182,11 @@ dropTarget.onFileDropped = function (self, filename, assetid)
             tv:updateComponents()
         end)
     else
-        local core = assert(coreMap[ext])
         app.assetManager:load(assetid, function (name, asset)
             local file = io.open(filename, "wb")
             file:write(asset:read())
             file:close()
-            run(core, filename)
+            runGame(filename)
         end)
     end
 end
