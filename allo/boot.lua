@@ -6,7 +6,7 @@ local libDir = projHome.."/allo/lib"
 
 function os.system(cmd, notrim)
     local f = assert(io.popen(cmd, 'r'))
-    local s = assert(f:read('*a'))
+    local s = assert(f:read('*l'))
     f:close()
     if notrim then return s end
     s = string.gsub(s, '^%s+', '')
