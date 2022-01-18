@@ -209,9 +209,9 @@ app:scheduleAction(5.0, true, function()
     print("Emulator stats", emulator:get_stats())
 end)
 
---local defaultGame = "roms/SNES/sf2t/sf2t.sfc"
--- local defaultGame = "roms/NES/tmnt2/tmnt2.nes"
-local defaultGame = "roms/Genesis/sor3/rom.smd"
+local defaultGame = "roms/SNES/sf2t/rom.sfc"
+-- local defaultGame = "roms/NES/tmnt2/rom.nes"
+--local defaultGame = "roms/Genesis/sor3/rom.smd"
 if #arg > 3 then
     defaultGame = arg[4]
 end
