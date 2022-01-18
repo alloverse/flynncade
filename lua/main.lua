@@ -1,3 +1,5 @@
+quat = require("modules.quat")
+
 local client = Client(
     arg[2], 
     "flynncade",
@@ -18,6 +20,46 @@ local GameBrowser = require("GameBrowser")
 
 local main = ui.View(Bounds(4, 0.1, -3,   1, 0.2, 1))
 main:setGrabbable(true)
+function math.sign(x)
+    if x<0 then
+      return -1
+    elseif x>0 then
+      return 1
+    else
+      return 0
+    end
+ end
+
+function quat.rotation_around_x(q)
+    local a = math.sqrt((q.w * q.w) + (q.x * q.x))
+    return quat.new(q.x, 0, 0, q.w / a)
+end
+function quat.rotation_around_y(q)
+    local a = math.sqrt((q.w * q.w) + (q.y * q.y))
+    return quat.new(0,  q.y, 0, q.w / a)
+end
+function quat.rotation_around_z(q)
+    local a = math.sqrt((q.w * q.w) + (q.z * q.z))
+    return quat.new(0, 0, q.z, q.w / a)
+end
+ 
+
+if App.initialLocation then
+    local loc = vec3.new(0,0,0)
+    local at = App.initialLocation * loc
+    at.y = 0
+    local q = App.initialLocation:to_quat()
+    local newQ = quat.rotation_around_y(q)
+
+    App.initialLocation = mat4.new()
+    App.initialLocation:rotate(App.initialLocation, newQ)
+    App.initialLocation:translate(App.initialLocation, at)
+end
+
+local main = ui.View(Bounds(0.2, 0.1, -4.5,   1, 0.2, 1))
+main:setGrabbable(true, {
+    rotation_constraint= {0,1,0}
+})
 
 Bounds.unit = function ()
     return Bounds(0,0,0,1,1,1)
@@ -135,16 +177,6 @@ quitButton.onActivated = function()
     end)
 end
 
-main:doWhenAwake(function()
-    main:addPropertyAnimation(ui.PropertyAnimation{
-        path= "transform.matrix.scale",
-        to=   {1, 1, 1},
-        from= {0.01, 1, 1},
-        duration= 0.3,
-        easing="quadOut" 
-    })
-end)
-
 local poller = nil
 function run(rom) 
     if poller then poller:cancel() end
@@ -164,8 +196,8 @@ end)
 --local defaultGame = "roms/SNES/sf2t/sf2t.sfc"
 -- local defaultGame = "roms/NES/tmnt2/tmnt2.nes"
 local defaultGame = "roms/Genesis/sor3/rom.smd"
-if #arg > 2 then
-    defaultGame = arg[3]
+if #arg > 3 then
+    defaultGame = arg[4]
 end
 run(defaultGame)
 
