@@ -66,6 +66,7 @@ Bounds.unit = function ()
 end
 
 local emulator = Emulator(app)
+local gameBrowser = nil
 
 local tv = main:addSubview(ui.ModelView(Bounds.unit():scale(0.3,0.3,0.3), assets.arcade))
 tv.bounds:move(0,0,0)
@@ -103,13 +104,28 @@ local menuButton = tv:addSubview(
 )
 menuButton:setColor({1,1,1,1})
 menuButton.onActivated = function(hand)
-    -- TODO: If the browser is already open, close it.
+    
+    if gameBrowser then 
+      gameBrowser:removeFromSuperview()
+      gameBrowser = nil
+    else 
+      print("=======================")
+      print("Opening Game Browser...")
+      print("=======================")
+      gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05), pose=ui.Pose(1, 1.5, 0)}, app)
+      main:addSubview(gameBrowser)
 
-    print("=======================")
-    print("Opening Game Browser...")
-    print("=======================")
-    local gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05), pose=ui.Pose(1, 1.5, 0)} , emulator, app)
-    main:addSubview(gameBrowser)
+      gameBrowser.onGameChosen = function(romPath)
+        emulator:loadGame(romPath)
+        gameBrowser:removeFromSuperview()
+        gameBrowser = nil
+      end
+
+      gameBrowser.onRestartGame = function()
+        emulator:restart()
+      end
+
+    end
 end
 
 

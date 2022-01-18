@@ -8,7 +8,6 @@ local MENU_ITEM_WIDTH = 1
 local MENU_ITEM_HEIGHT = 0.15
 local MENU_ITEM_PADDING = 0.02
 
-
 function readfile(path)
   local f = io.open(path, "r")
   if not f then return nil end
@@ -17,9 +16,8 @@ function readfile(path)
   return s
 end
 
-function GameBrowser:_init(bounds, emulator, app)
+function GameBrowser:_init(bounds, app)
   self:super(bounds)
-  self.emulator = emulator
   self.app = app
 
   assets = {
@@ -85,7 +83,7 @@ function GameBrowser:_addSettingsButtons()
     restartButtonLabel:setColor({1, 1, 1, 0})
   end
   restartButton.onTouchUp = function(pointer)
-    self.emulator:restart()
+    self.onRestartGame()
   end
 
   settingsPanel:addSubview(restartButton)
@@ -218,8 +216,8 @@ function GameBrowser:showGame(game)
   local depth = 2
 
   -- Create a "page"; the surface on which the menu items will be drawn.
-  local page = ui.Surface(ui.Bounds(0, 0, 0.01, 1, MENU_ITEM_HEIGHT, 0.01):move(depth/60, -depth/60, depth/60))
-  page:setColor({1, 0, 1, 1})
+  local page = ui.Surface(ui.Bounds(0, 0, 0.01, 1, MENU_ITEM_HEIGHT*4, 0.01):move(depth/60, -depth/60, depth/60))
+  page:setColor({1, 1, 1, 1})
   page:setTexture(game.meta.albumArt)
   self:addSubview(page)
 
@@ -230,13 +228,15 @@ function GameBrowser:showGame(game)
   local playButton = ui.Button(ui.Bounds(0, 0, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*2, 0.1, 0.1))
   playButton.label:setText("Play " .. game.meta.gameName)
 
-  local gameInfo = Label{bounds=Bounds(0, 0, 0, 1.0, 0.05, 0.001), color={0.9,0.9,0.9,1}, text=game.meta.blurb, halign="left", wrap=true}
-
+  local gameInfo = Label{bounds=Bounds(0, 0, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*4, 0.03, 0.001), color={0.1,0.1,0.1,1}, text=game.meta.blurb, halign="left", wrap=true}
+  page:addSubview(gameInfo)
 
 
   playButton.onActivated = function()
     pretty.dump(game)
-    self.emulator:loadGame(game.rom)
+    self.onGameChosen(game.rom)
+
+    self:removeFromSuperview()
   end
 
   page:addSubview(playButton)
