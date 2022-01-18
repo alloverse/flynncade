@@ -146,9 +146,8 @@ main:doWhenAwake(function()
 end)
 
 local poller = nil
-function run(core, rom) 
+function run(rom) 
     if poller then poller:cancel() end
-    emulator:loadCore(core)
     emulator:loadGame(rom)
 
     poller = app:scheduleAction(1.0/emulator:getFps(), true, function()
@@ -156,20 +155,6 @@ function run(core, rom)
     end)
 end
 
-local coreMap = {
-    sfc = "snes9x",
-    smc = "snes9x",
-    nes = "nestopia",
-    smd = "genesis_plus_gx",
-}
-
-function runGame(filename)
-    print("rungame",filename)
-    local ext = assert(filename:match("^.+%.(.+)$"))
-    print("rungame",ext)
-    local core = assert(coreMap[ext])
-    run(core, filename)
-end
 
 app:scheduleAction(5.0, true, function() 
     print("Network stats", app.client.client:get_stats())
@@ -178,17 +163,17 @@ end)
 
 --local defaultGame = "roms/SNES/sf2t/sf2t.sfc"
 -- local defaultGame = "roms/NES/tmnt2/tmnt2.nes"
-local defaultGame = "roms/Genesis/sor3/sor3.smd"
+local defaultGame = "roms/Genesis/sor3/rom.smd"
 if #arg > 2 then
     defaultGame = arg[3]
 end
-runGame(defaultGame)
+run(defaultGame)
 
 
 local dropTarget = main:addSubview(View(ui.Bounds.unit():scale(0.7, 0.5, 0.05):rotate(-3.14/6, 1, 0, 0):move(0,1.4,0.0)))
 dropTarget:setPointable(true)
 dropTarget.acceptedFileExtensions = {"png"}
-for k,v in pairs(coreMap) do table.insert(dropTarget.acceptedFileExtensions, k) end
+for k,v in pairs(Emulator.coreMap) do table.insert(dropTarget.acceptedFileExtensions, k) end
 dropTarget.onFileDropped = function (self, filename, assetid)
     local ext = assert(filename:match("^.+%.(.+)$"))
 
@@ -203,7 +188,7 @@ dropTarget.onFileDropped = function (self, filename, assetid)
             local file = io.open(filename, "wb")
             file:write(asset:read())
             file:close()
-            runGame(filename)
+            run(filename)
         end)
     end
 end

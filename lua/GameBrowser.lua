@@ -69,7 +69,6 @@ function GameBrowser:_addSettingsButtons()
 
   settingsPanel:addSubview(quitButton)
 
-
   local restartButton = ui.Surface(ui.Bounds(0.1, -0.2, 0.01,  0.2, 0.2, 0.01));
   local restartButtonLabel = Label{bounds=Bounds(0.6, 0, 0.01, 1, 0.05, 0.01), color={1,1,1,0}, text="Reset Machine", halign="left"}
   restartButton:addSubview(restartButtonLabel)
@@ -125,7 +124,7 @@ function GameBrowser:listConsoles()
     -- Make the menuItem interactive
     menuItem:setPointable(true)
     menuItem.onTouchUp = function(pointer)
-      self:listGames(gamePath)
+      self:listGames(gamePath, consoleName)
     end
 
     menuItem.onPointerEntered = function(pointer)
@@ -144,7 +143,7 @@ function GameBrowser:listConsoles()
   p:close()
 end
 
-function GameBrowser:listGames(path)
+function GameBrowser:listGames(path, platform)
   local depth = 1
   
   -- Create a "page"; the surface on which the menu items will be drawn.
@@ -166,15 +165,22 @@ function GameBrowser:listGames(path)
     if infojsonstr then
       print("GameBrowser found a json: "..infojsonstr)
 
+      local platformToExtensionMap = {
+        NES = "nes",
+        SNES = "sfc",
+        Genesis = "smd"
+      }
+
+      local extension = platformToExtensionMap[platform]
+
       local game = {
           path= gamePath,
           meta= json.decode(infojsonstr),
-          rom= gamePath.."/sor3.smd",
+          rom= gamePath.."/rom."..extension,
           --albumArt= ui.Asset.File(gamePath.."/albumArt.jpg"),
       }
 
-      print("GAME NAME (from json):", game.meta.gameName)
-      
+
       -- Create a menu item with bounds relative to its parent-to-be page
       local menuItem = ui.Surface(ui.Bounds(0, 0 - (i * MENU_ITEM_HEIGHT), 0.01,  MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT, 0.01))
       menuItem:setColor({1, 1, 1, 1})

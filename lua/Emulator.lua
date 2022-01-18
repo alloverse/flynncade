@@ -10,6 +10,13 @@ ffi.cdef(require("cdef"))
 
 Emulator = class.Emulator()
 
+Emulator.coreMap = {
+  sfc = "snes9x",
+  smc = "snes9x",
+  nes = "nestopia",
+  smd = "genesis_plus_gx",
+}
+
 function Emulator:_init(app)
     self.app = app
     self.speaker = nil
@@ -82,6 +89,13 @@ function Emulator:loadCore(coreName)
 end
 
 function Emulator:loadGame(gamePath)
+
+    -- figure out which core to use
+    local ext = assert(gamePath:match("^.+%.(.+)$"))
+    local core = assert(Emulator.coreMap[ext])
+    self:loadCore(core)
+
+
     self.gamePath = gamePath
 
     self.system = ffi.new("struct retro_system_info")
