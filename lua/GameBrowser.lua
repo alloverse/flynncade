@@ -175,9 +175,10 @@ function GameBrowser:listGames(path, platform)
           path= gamePath,
           meta= json.decode(infojsonstr),
           rom= gamePath.."/rom."..extension,
-          --albumArt= ui.Asset.File(gamePath.."/albumArt.jpg"),
+          boxArt= ui.Asset.File(gamePath.."/boxArt.jpg"),
       }
 
+      self.app.assetManager:add(game.boxArt, true)
 
       -- Create a menu item with bounds relative to its parent-to-be page
       local menuItem = ui.Surface(ui.Bounds(0, 0 - (i * MENU_ITEM_HEIGHT), 0.01,  MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT, 0.01))
@@ -225,12 +226,18 @@ function GameBrowser:showGame(game)
   self.bounds:move(-depth/60, depth/60, -depth/60)
   self:markAsDirty("transform")
 
-  local playButton = ui.Button(ui.Bounds(0, 0, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*2, 0.1, 0.1))
-  playButton.label:setText("Play " .. game.meta.gameName)
+  local gameTitle = Label{bounds=Bounds(0.15, 0.25, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*4, 0.05, 0.001), color={0.1,0.1,0.1,1}, text=game.meta.gameName, halign="left" }
+  page:addSubview(gameTitle)
 
-  local gameInfo = Label{bounds=Bounds(0, 0, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*4, 0.03, 0.001), color={0.1,0.1,0.1,1}, text=game.meta.blurb, halign="left", wrap=true}
+  local gameInfo = Label{bounds=Bounds(0, 0.2, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*4, 0.03, 0.001), color={0.1,0.1,0.1,1}, text=game.meta.blurb, halign="left", valign="top", wrap=true}
   page:addSubview(gameInfo)
 
+  -- local gameBoxArt = Surface(ui.Bounds(-MENU_ITEM_WIDTH/2 + MENU_ITEM_PADDING, MENU_ITEM_PADDING, 0.001, 0.1, 0.1, 0.001))
+  -- gameBoxArt:setTexture(game.boxArt)
+  -- page:addSubview(gameBoxArt)
+
+  local playButton = ui.Button(ui.Bounds(0, -0.2, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*2, 0.1, 0.1))
+  playButton.label:setText("Play " .. game.meta.gameName)
 
   playButton.onActivated = function()
     pretty.dump(game)
