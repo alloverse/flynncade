@@ -235,8 +235,6 @@ function GameBrowser:showGame(game)
   playButton.onActivated = function()
     pretty.dump(game)
     self.onGameChosen(game.rom)
-
-    self:removeFromSuperview()
   end
 
   page:addSubview(playButton)
