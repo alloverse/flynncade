@@ -36,14 +36,6 @@ end
 
 function GameBrowser:_addSettingsButtons()
   
-  -- Header + "Alloverse Arcade"
-  local header = ui.Surface(ui.Bounds(0, 0.2, 0.01,  MENU_ITEM_WIDTH, 0.2, 0.03));
-  header:setColor({0.60, 0.80, 0.95, 1})
-  self:addSubview(header)
-
-  local settingsLabel = Label{bounds=Bounds(MENU_ITEM_PADDING, 0, 0.01, MENU_ITEM_WIDTH-(MENU_ITEM_PADDING*2), MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4), 0.01), color={1,1,1,1}, text="AlloArcade", halign="left"}
-  header:addSubview(settingsLabel)
-
   -- Right, vertical menu with quit & restart
   local settingsPanel = ui.Surface(ui.Bounds(0.5, 0.2, 0.01,  0, 0, 0.01):rotate(-3.14/8, 0, 1, 0))
   settingsPanel:setColor({0, 0, 0, 0})
@@ -98,14 +90,19 @@ function GameBrowser:listConsoles()
   local depth = 0
 
   -- Create a "page"; the surface on which the menu items will be drawn.
-  local page = ui.Surface(ui.Bounds(0,0,0, 0, 0, 0):move(depth/60, -depth/60, depth/60))
+  local page = ui.Surface(ui.Bounds(0,0,0, 0, 0, 0)) --:move(depth/60, -depth/60, depth/60)
   page:setColor({0, 0, 1, 0.9})
-
   self.browserStack:push(page)
 
-  -- Move the mainView up-and-back so that the newly created page always remains on "z=0"
-  self.bounds:move(-depth/60, depth/60, -depth/60)
-  self:markAsDirty("transform")
+
+  -- Header + "Alloverse Arcade"
+  local header = ui.Surface(ui.Bounds(0, 0.2, 0.01,  MENU_ITEM_WIDTH, 0.2, 0.03));
+  header:setColor({0.60, 0.80, 0.95, 1})
+  page:addSubview(header)
+
+  local headerLabel = Label{bounds=Bounds(MENU_ITEM_PADDING, 0, 0.01, MENU_ITEM_WIDTH-(MENU_ITEM_PADDING*2), MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4), 0.01), color={1,1,1,1}, text="Choose Console", halign="left"}
+  header:addSubview(headerLabel)
+
 
   -- Look through the console folders
   local p = io.popen('find ' .. path .. '/* -maxdepth 0')
@@ -149,14 +146,19 @@ function GameBrowser:listGames(path, platform)
   local depth = 1
   
   -- Create a "page"; the surface on which the menu items will be drawn.
-  local page = ui.Surface(ui.Bounds(0,0,0, 0, 0, 0):move(depth/60, -depth/60, depth/60))
+  local page = ui.Surface(ui.Bounds(0,0,0, 0, 0, 0)) --:move(depth/60, -depth/60, depth/60)
   page:setColor({0, 0, 1, 0.9})
-  --self:addSubview(page)
+
   self.browserStack:push(page)
 
-  -- Move the mainView up-and-back so that the newly created page always remains on "z=0"
-  self.bounds:move(-depth/60, depth/60, -depth/60)
-  self:markAsDirty("transform")
+  -- Header + "Alloverse Arcade"
+  local header = ui.Surface(ui.Bounds(0, 0.2, 0.01,  MENU_ITEM_WIDTH, 0.2, 0.03));
+  header:setColor({0.60, 0.80, 0.95, 1})
+  page:addSubview(header)
+
+  local headerLabel = Label{bounds=Bounds(MENU_ITEM_PADDING, 0, 0.01, MENU_ITEM_WIDTH-(MENU_ITEM_PADDING*2), MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4), 0.01), color={1,1,1,1}, text="Choose Game", halign="left"}
+  header:addSubview(headerLabel)
+
 
   -- Iterate through the folder
   local p = io.popen('find ' .. path .. '/* -maxdepth 0')
@@ -220,25 +222,45 @@ function GameBrowser:showGame(game)
   local depth = 2
 
   -- Create a "page"; the surface on which the menu items will be drawn.
-  local page = ui.Surface(ui.Bounds(0, 0, 0.01, 1, MENU_ITEM_HEIGHT*4, 0.01):move(depth/60, -depth/60, depth/60))
+  local page = ui.Surface(ui.Bounds(0, 0, 0.01, 1, MENU_ITEM_HEIGHT*4, 0.01)) --:move(depth/60, -depth/60, depth/60)
   page:setColor({1, 1, 1, 1})
   page:setTexture(game.meta.albumArt)
-  -- self:addSubview(page)
+  
   self.browserStack:push(page)
 
-  -- Move the mainView up-and-back so that the newly created page always remains on "z=0"
-  self.bounds:move(-depth/60, depth/60, -depth/60)
-  self:markAsDirty("transform")
+  -- Header w/ game title & box art
+  local header = ui.Surface(ui.Bounds(0, 0.2, 0.01,  MENU_ITEM_WIDTH, 0.2, 0.03));
+  header:setColor({0.60, 0.80, 0.95, 1})
+  page:addSubview(header)
 
-  local gameTitle = Label{bounds=Bounds(0.15, 0.25, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*4, 0.05, 0.001), color={0.1,0.1,0.1,1}, text=game.meta.gameName, halign="left" }
-  page:addSubview(gameTitle)
+  local gameTitle = Label{bounds=Bounds(0.10,
+                                        0,
+                                        0.01, 
+                                        MENU_ITEM_WIDTH - 0.15 - MENU_ITEM_PADDING*2,
+                                        MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4),
+                                        0.01),
+                                        color={1,1,1,1}, text=game.meta.gameName, halign="left", fitToWidth=MENU_ITEM_WIDTH - 0.15 - MENU_ITEM_PADDING*2}
+  header:addSubview(gameTitle)
 
-  local gameInfo = Label{bounds=Bounds(0, 0.2, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*4, 0.03, 0.001), color={0.1,0.1,0.1,1}, text=game.meta.blurb, halign="left", valign="top", wrap=true}
+
+  local gameBoxArt = Surface(ui.Bounds(-MENU_ITEM_WIDTH/2 + 0.075 + MENU_ITEM_PADDING, 
+                                        0,  
+                                        0.001, 
+                                        0.15, 0.15, 0.001))
+  gameBoxArt:setTexture(game.boxArt)
+  header:addSubview(gameBoxArt)
+
+
+  -- Game info blurb + "play" button
+  local gameInfo = Label{bounds=Bounds(
+                                          0,
+                                          0.1 - MENU_ITEM_PADDING,
+                                          0,
+                                          MENU_ITEM_WIDTH-MENU_ITEM_PADDING*2,
+                                          0.03,
+                                          0.001
+                                      ), color={0.1,0.1,0.1,1}, text=game.meta.blurb, halign="left", valign="top", wrap=true}
   page:addSubview(gameInfo)
-
-  -- local gameBoxArt = Surface(ui.Bounds(-MENU_ITEM_WIDTH/2 + MENU_ITEM_PADDING, MENU_ITEM_PADDING, 0.001, 0.1, 0.1, 0.001))
-  -- gameBoxArt:setTexture(game.boxArt)
-  -- page:addSubview(gameBoxArt)
 
   local playButton = ui.Button(ui.Bounds(0, -0.2, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*2, 0.1, 0.1))
   playButton:setColor({0.83, 0.53, 0.78, 1})
