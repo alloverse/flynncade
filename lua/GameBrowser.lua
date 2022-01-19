@@ -26,6 +26,9 @@ function GameBrowser:_init(bounds, app)
   }
   self.app.assetManager:add(assets)
 
+  self.browserStack = ui.NavStack(ui.Bounds(0,0,0,1,1,1))
+  self:addSubview(self.browserStack)
+
   self:_addSettingsButtons()
 
   self:listConsoles()
@@ -33,16 +36,16 @@ end
 
 function GameBrowser:_addSettingsButtons()
   
+  -- Header + "Alloverse Arcade"
   local header = ui.Surface(ui.Bounds(0, 0.2, 0.01,  MENU_ITEM_WIDTH, 0.2, 0.03));
-  header:setColor({1, 0, 0.5, 0.8})
+  header:setColor({0.60, 0.80, 0.95, 1})
   self:addSubview(header)
 
-  local settingsLabel = Label{bounds=Bounds(MENU_ITEM_PADDING, 0, 0.01, MENU_ITEM_WIDTH-(MENU_ITEM_PADDING*2), MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4), 0.01), color={0.15,0.15,0.15,1}, text="GAME SELECT", halign="left"}
+  local settingsLabel = Label{bounds=Bounds(MENU_ITEM_PADDING, 0, 0.01, MENU_ITEM_WIDTH-(MENU_ITEM_PADDING*2), MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4), 0.01), color={1,1,1,1}, text="AlloArcade", halign="left"}
   header:addSubview(settingsLabel)
 
-
-
-  local settingsPanel = ui.Surface(ui.Bounds(0.5, 0.2, 0.01,  0, 0, 0.01)) --:rotate(-3.14/8, 0, 1, 0):move(0.3, 0, 0)
+  -- Right, vertical menu with quit & restart
+  local settingsPanel = ui.Surface(ui.Bounds(0.5, 0.2, 0.01,  0, 0, 0.01):rotate(-3.14/8, 0, 1, 0))
   settingsPanel:setColor({0, 0, 0, 0})
   self:addSubview(settingsPanel)
 
@@ -95,8 +98,10 @@ function GameBrowser:listConsoles()
   local depth = 0
 
   -- Create a "page"; the surface on which the menu items will be drawn.
-  local page = self:addSubview(ui.Surface(ui.Bounds(0,0,0, 0, 0, 0):move(depth/60, -depth/60, depth/60)))
+  local page = ui.Surface(ui.Bounds(0,0,0, 0, 0, 0):move(depth/60, -depth/60, depth/60))
   page:setColor({0, 0, 1, 0.9})
+
+  self.browserStack:push(page)
 
   -- Move the mainView up-and-back so that the newly created page always remains on "z=0"
   self.bounds:move(-depth/60, depth/60, -depth/60)
@@ -106,7 +111,6 @@ function GameBrowser:listConsoles()
   local p = io.popen('find ' .. path .. '/* -maxdepth 0')
   local i=0
   for gamePath in p:lines() do
-    print("The Game Browser found lines: "..gamePath)
 
     -- Quick hack to get the console's name from the path
     local consoleName = string.sub(gamePath, 6)
@@ -126,7 +130,7 @@ function GameBrowser:listConsoles()
     end
 
     menuItem.onPointerEntered = function(pointer)
-      menuItem:setColor({0.9, 0.9, 1, 1})
+      menuItem:setColor({0.78, 0.82, 0.88, 1})
     end
 
     menuItem.onPointerExited = function(pointer)
@@ -147,7 +151,8 @@ function GameBrowser:listGames(path, platform)
   -- Create a "page"; the surface on which the menu items will be drawn.
   local page = ui.Surface(ui.Bounds(0,0,0, 0, 0, 0):move(depth/60, -depth/60, depth/60))
   page:setColor({0, 0, 1, 0.9})
-  self:addSubview(page)
+  --self:addSubview(page)
+  self.browserStack:push(page)
 
   -- Move the mainView up-and-back so that the newly created page always remains on "z=0"
   self.bounds:move(-depth/60, depth/60, -depth/60)
@@ -157,11 +162,9 @@ function GameBrowser:listGames(path, platform)
   local p = io.popen('find ' .. path .. '/* -maxdepth 0')
   local i=0
   for gamePath in p:lines() do
-    print("The Game Browser found lines: "..gamePath)
 
     local infojsonstr = readfile(gamePath.."/info.json")
     if infojsonstr then
-      print("GameBrowser found a json: "..infojsonstr)
 
       local platformToExtensionMap = {
         NES = "nes",
@@ -195,7 +198,7 @@ function GameBrowser:listGames(path, platform)
       end
 
       menuItem.onPointerEntered = function(pointer)
-        menuItem:setColor({0.9, 0.9, 1, 1})
+        menuItem:setColor({0.78, 0.82, 0.88, 1})
       end
 
       menuItem.onPointerExited = function(pointer)
@@ -220,7 +223,8 @@ function GameBrowser:showGame(game)
   local page = ui.Surface(ui.Bounds(0, 0, 0.01, 1, MENU_ITEM_HEIGHT*4, 0.01):move(depth/60, -depth/60, depth/60))
   page:setColor({1, 1, 1, 1})
   page:setTexture(game.meta.albumArt)
-  self:addSubview(page)
+  -- self:addSubview(page)
+  self.browserStack:push(page)
 
   -- Move the mainView up-and-back so that the newly created page always remains on "z=0"
   self.bounds:move(-depth/60, depth/60, -depth/60)
@@ -237,7 +241,8 @@ function GameBrowser:showGame(game)
   -- page:addSubview(gameBoxArt)
 
   local playButton = ui.Button(ui.Bounds(0, -0.2, 0, MENU_ITEM_WIDTH-MENU_ITEM_PADDING*2, 0.1, 0.1))
-  playButton.label:setText("Play " .. game.meta.gameName)
+  playButton:setColor({0.83, 0.53, 0.78, 1})
+  playButton.label:setText("Play")
 
   playButton.onActivated = function()
     pretty.dump(game)

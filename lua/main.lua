@@ -100,9 +100,10 @@ helpPlate:addSubview(ui.Label{
 
 
 local menuButton = tv:addSubview(
-    ui.Button(ui.Bounds{size=ui.Size(0.5,0.5,0.5)}:move( -0.1, 2.6, 1.3))
+    ui.Button(ui.Bounds{size=ui.Size(0.5,0.2,0.1)}:move( -0.1, 2.6, 1.3))
 )
-menuButton:setColor({1,1,1,1})
+menuButton.label:setText("Menu")
+menuButton:setColor({0.60, 0.80, 0.95, 1})
 menuButton.onActivated = function(hand)
     
     if gameBrowser then 
