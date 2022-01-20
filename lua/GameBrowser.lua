@@ -23,6 +23,7 @@ function GameBrowser:_init(bounds, app)
   assets = {
     quit = ui.Asset.File("images/icon-quit.png"),
     restart = ui.Asset.File("images/icon-restart.png"),
+    settings = ui.Asset.File("images/icon-settings.png"),
   }
   self.app.assetManager:add(assets)
 
@@ -82,6 +83,65 @@ function GameBrowser:_addSettingsButtons()
   end
 
   settingsPanel:addSubview(restartButton)
+
+
+  local settingsButton = ui.Surface(ui.Bounds(0.1, -0.4, 0.01,  0.2, 0.2, 0.01));
+  local settingsButtonLabel = Label{bounds=Bounds(0.6, 0, 0.01, 1, 0.05, 0.01), color={1,1,1,0}, text="Settings", halign="left"}
+  settingsButton:addSubview(settingsButtonLabel)
+
+  settingsButton:setColor({0, 0, 0, 1})
+  settingsButton:setTexture(assets.settings)
+  settingsButton:setPointable(true)
+  settingsButton.onPointerEntered = function(pointer)
+    settingsButton:setColor({1, 1, 1, 1})
+    settingsButtonLabel:setColor({1, 1, 1, 1})
+  end
+  settingsButton.onPointerExited = function(pointer)
+    settingsButton:setColor({0, 0, 0, 1})
+    settingsButtonLabel:setColor({1, 1, 1, 0})
+  end
+  settingsButton.onTouchUp = function(pointer)
+    self:showAdvancedSettings()
+  end
+
+  settingsPanel:addSubview(settingsButton)
+end
+
+function GameBrowser:showAdvancedSettings()
+  local page = ui.Surface(ui.Bounds(0,0,0, MENU_ITEM_WIDTH, 0.6, 0.03))
+  page:setColor({1,1,1,1})
+  self.browserStack:push(page)
+
+  local frameskipLabel = page:addSubview(ui.Label{
+    bounds= ui.Bounds(0,0.2,0,   MENU_ITEM_WIDTH-0.1, 0.06, 0),
+    text= "Frameskip "..string.format("%.0f", self.onSetting("frameSkip")),
+    color= {0,0,0,1},
+    halign="left"
+  })
+  local frameskipSlider = page:addSubview(ui.Slider(ui.Bounds(0,0.1,0,  MENU_ITEM_WIDTH-0.1, 0.1, 0.1)))
+  frameskipSlider:minValue(1)
+  frameskipSlider:maxValue(10)
+  frameskipSlider:currentValue(self.onSetting("frameSkip"))
+  frameskipSlider.onValueChanged = function(s, v)
+    v = math.floor(v)
+    self.onSetting("frameSkip", v)
+    frameskipLabel:setText("Frameskip "..string.format("%.0f", self.onSetting("frameSkip")))
+  end
+
+  local volumeLabel = page:addSubview(ui.Label{
+    bounds= ui.Bounds(0,-0.1,0,   MENU_ITEM_WIDTH-0.1, 0.06, 0),
+    text= "Sound volume "..string.format("%.0f", self.onSetting("soundVolume")*100).."%",
+    color= {0,0,0,1},
+    halign="left"
+  })
+  local volumeSlider = page:addSubview(ui.Slider(ui.Bounds(0,-0.2,0,  MENU_ITEM_WIDTH-0.1, 0.1, 0.1)))
+  volumeSlider:minValue(0)
+  volumeSlider:maxValue(1)
+  volumeSlider:currentValue(self.onSetting("soundVolume"))
+  volumeSlider.onValueChanged = function(s, v)
+    self.onSetting("soundVolume", v)
+    volumeLabel:setText("Sound volume "..string.format("%.0f", self.onSetting("soundVolume")*100).."%")
+  end
 end
 
 

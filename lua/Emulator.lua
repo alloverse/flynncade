@@ -29,8 +29,8 @@ function Emulator:_init(app)
     self.elapsed_videotime = 0
     self.elapsed_inaudiotime = 0
     self.elapsed_outaudiotime = 0
-    self.soundVolume = 0.1
-    self.frameSkip = 1 -- 1=60fps, 2=30fps, etc
+    self.soundVolume = 0.5
+    self.frameSkip = 2 -- 1=60fps, 2=30fps, etc
     self.onScreenSetup = function (resulution, crop) assert("assign onScreenSetup") end
 end
 

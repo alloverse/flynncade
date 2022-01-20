@@ -126,6 +126,13 @@ menuButton.onActivated = function(hand)
         emulator:restart()
       end
 
+      gameBrowser.onSetting = function(name, newValue)
+        if newValue then
+            emulator[name] = newValue
+        end
+        return emulator[name]
+      end
+
     end
 end
 
