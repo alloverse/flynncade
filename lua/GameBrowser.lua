@@ -241,9 +241,11 @@ function GameBrowser:listGames(path, platform)
           meta= json.decode(infojsonstr),
           rom= gamePath.."/rom."..extension,
           boxArt= ui.Asset.File(gamePath.."/boxArt.jpg"),
+          cabinetTexture= ui.Asset.File(gamePath.."/cabinet-texture.png"),
       }
 
       self.app.assetManager:add(game.boxArt, true)
+      self.app.assetManager:add(game.cabinetTexture, true)
 
       -- Create a menu item with bounds relative to its parent-to-be page
       local menuItem = ui.Surface(ui.Bounds(0, 0 - (i * MENU_ITEM_HEIGHT), 0.01,  MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT, 0.01))
@@ -284,7 +286,6 @@ function GameBrowser:showGame(game)
   -- Create a "page"; the surface on which the menu items will be drawn.
   local page = ui.Surface(ui.Bounds(0, 0, 0.01, 1, MENU_ITEM_HEIGHT*4, 0.01)) --:move(depth/60, -depth/60, depth/60)
   page:setColor({1, 1, 1, 1})
-  page:setTexture(game.meta.albumArt)
   
   self.browserStack:push(page)
 
@@ -328,7 +329,7 @@ function GameBrowser:showGame(game)
 
   playButton.onActivated = function()
     pretty.dump(game)
-    self.onGameChosen(game.rom)
+    self.onGameChosen(game)
   end
 
   page:addSubview(playButton)

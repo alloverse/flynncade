@@ -105,37 +105,41 @@ local menuButton = tv:addSubview(
 menuButton.label:setText("Menu")
 menuButton:setColor({0.60, 0.80, 0.95, 1})
 menuButton.onActivated = function(hand)
-    
-    if gameBrowser then 
+  
+  if gameBrowser then 
+    gameBrowser:removeFromSuperview()
+    gameBrowser = nil
+  else 
+    gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05), pose=ui.Pose(1, 1.5, 0)}, app)
+    main:addSubview(gameBrowser)
+
+    gameBrowser.onGameChosen = function(game)
+      emulator:loadGame(game.rom)
+      changeTexture(game.cabinetTexture)
+
       gameBrowser:removeFromSuperview()
       gameBrowser = nil
-    else 
-      print("=======================")
-      print("Opening Game Browser...")
-      print("=======================")
-      gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05), pose=ui.Pose(1, 1.5, 0)}, app)
-      main:addSubview(gameBrowser)
-
-      gameBrowser.onGameChosen = function(romPath)
-        emulator:loadGame(romPath)
-        gameBrowser:removeFromSuperview()
-        gameBrowser = nil
-      end
-
-      gameBrowser.onRestartGame = function()
-        emulator:restart()
-      end
-
-      gameBrowser.onSetting = function(name, newValue)
-        if newValue then
-            emulator[name] = newValue
-        end
-        return emulator[name]
-      end
-
     end
+
+    gameBrowser.onSetting = function(name, newValue)
+      if newValue then
+          emulator[name] = newValue
+      end
+      return emulator[name]
+    end
+
+    gameBrowser.onRestartGame = function()
+      emulator:restart()
+    end
+
+  end
 end
 
+
+function changeTexture(cabinetTextureAsset)
+  tv.texture = cabinetTextureAsset
+  tv:updateComponents()
+end
 
 function newScreen(resolution, cropDimensions)
     local screen = ui.VideoSurface(ui.Bounds.unit(), resolution)
@@ -226,6 +230,8 @@ end
 run(defaultGame)
 
 
+
+
 local dropTarget = main:addSubview(View(ui.Bounds.unit():scale(0.7, 0.5, 0.05):rotate(-3.14/6, 1, 0, 0):move(0,1.4,0.0)))
 dropTarget:setPointable(true)
 dropTarget.acceptedFileExtensions = {"png"}
@@ -233,7 +239,7 @@ for k,v in pairs(Emulator.coreMap) do table.insert(dropTarget.acceptedFileExtens
 dropTarget.onFileDropped = function (self, filename, assetid)
     local ext = assert(filename:match("^.+%.(.+)$"))
 
-    if ext == "png" then 
+    if ext == "png" then
         app.assetManager:load(assetid, function (name, asset)
             app.assetManager:add(asset, true)
             tv.texture = asset
