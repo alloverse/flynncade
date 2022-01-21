@@ -242,6 +242,7 @@ dropTarget.onFileDropped = function (self, filename, assetid)
         app.assetManager:load(assetid, function (name, asset)
             app.assetManager:add(asset, true)
             tv.texture = asset
+            tv.material.uvScale = {1, -1}
             tv:updateComponents()
         end)
     else
