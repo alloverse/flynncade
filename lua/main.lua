@@ -110,7 +110,7 @@ menuButton.onActivated = function(hand)
     gameBrowser:removeFromSuperview()
     gameBrowser = nil
   else 
-    gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05), pose=ui.Pose(1, 1.5, 0)}, app)
+    gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05), pose=ui.Pose(1, 1.5, 0)}:rotate(-3.14/8, 0, 1, 0), app)
     main:addSubview(gameBrowser)
 
     gameBrowser.onGameChosen = function(game)

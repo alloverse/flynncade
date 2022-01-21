@@ -38,7 +38,7 @@ end
 function GameBrowser:_addSettingsButtons()
   
   -- Right, vertical menu with quit & restart
-  local settingsPanel = ui.Surface(ui.Bounds(0.5, 0.2, 0.01,  0, 0, 0.01):rotate(-3.14/8, 0, 1, 0))
+  local settingsPanel = ui.Surface(ui.Bounds(0.5, 0.2, 0.01,  0, 0, 0.01))
   settingsPanel:setColor({0, 0, 0, 0})
   self:addSubview(settingsPanel)
 
@@ -156,7 +156,7 @@ function GameBrowser:listConsoles()
 
 
   -- Header + "Alloverse Arcade"
-  local header = ui.Surface(ui.Bounds(0, 0.2, 0.01,  MENU_ITEM_WIDTH, 0.2, 0.03));
+  local header = ui.Surface(ui.Bounds(0, 0.2, 0.015,  MENU_ITEM_WIDTH, 0.2, 0.03));
   header:setColor({0.60, 0.80, 0.95, 1})
   page:addSubview(header)
 
@@ -173,7 +173,15 @@ function GameBrowser:listConsoles()
     local consoleName = string.sub(gamePath, 6)
 
     -- Create a menu item with bounds relative to its parent-to-be page
-    local menuItem = ui.Surface(ui.Bounds(0, 0 - (i * MENU_ITEM_HEIGHT), 0.01, MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT, 0.01))
+    local menuItem = ui.Surface(ui.Bounds(
+                                          0, 
+                                          0 - (i * MENU_ITEM_HEIGHT), 
+                                          0.01, 
+                                          MENU_ITEM_WIDTH, 
+                                          MENU_ITEM_HEIGHT, 
+                                          0.01
+    ))
+
     menuItem:setColor({1, 1, 1, 1})
 
     -- Create a Label inside said menu item
@@ -187,7 +195,7 @@ function GameBrowser:listConsoles()
     end
 
     menuItem.onPointerEntered = function(pointer)
-      menuItem:setColor({0.78, 0.82, 0.88, 1})
+      menuItem:setColor({0.83, 0.89, 0.93, 1})
     end
 
     menuItem.onPointerExited = function(pointer)
@@ -262,7 +270,7 @@ function GameBrowser:listGames(path, platform)
       end
 
       menuItem.onPointerEntered = function(pointer)
-        menuItem:setColor({0.78, 0.82, 0.88, 1})
+        menuItem:setColor({0.83, 0.89, 0.93, 1})
       end
 
       menuItem.onPointerExited = function(pointer)
@@ -284,9 +292,14 @@ function GameBrowser:showGame(game)
   local depth = 2
 
   -- Create a "page"; the surface on which the menu items will be drawn.
-  local page = ui.Surface(ui.Bounds(0, 0, 0.01, 1, MENU_ITEM_HEIGHT*4, 0.01)) --:move(depth/60, -depth/60, depth/60)
+  local page = ui.Surface(ui.Bounds(
+                                    0, 
+                                    0,
+                                    0.01, 
+                                    1, 
+                                    MENU_ITEM_HEIGHT*4, 
+                                    0.01)) --:move(depth/60, -depth/60, depth/60)
   page:setColor({1, 1, 1, 1})
-  
   self.browserStack:push(page)
 
   -- Header w/ game title & box art
@@ -317,8 +330,8 @@ function GameBrowser:showGame(game)
                                           0,
                                           0.1 - MENU_ITEM_PADDING,
                                           0,
-                                          MENU_ITEM_WIDTH-MENU_ITEM_PADDING*2,
-                                          0.03,
+                                          MENU_ITEM_WIDTH-MENU_ITEM_PADDING*4,
+                                          0.03, --height/fontsize
                                           0.001
                                       ), color={0.1,0.1,0.1,1}, text=game.meta.blurb, halign="left", valign="top", wrap=true}
   page:addSubview(gameInfo)
