@@ -137,7 +137,8 @@ end
 
 
 function changeTexture(cabinetTextureAsset)
-  tv.texture = cabinetTextureAsset
+  tv.material.texture = cabinetTextureAsset
+  tv.material.uvScale = { 1, -1 }
   tv:updateComponents()
 end
 
