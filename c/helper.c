@@ -77,10 +77,15 @@ size_t flynn_resample(
     destframe->linesize[0] = dest_frame_count * 2 * dest_stereo?2:1;
 
     int ret = swr_convert_frame(swr, destframe, sourceframe);
+    av_frame_free(&sourceframe);
+    destframe->data[0] = NULL; // so that we retain ownership and it's not free'd by frame_free
+    size_t nb_samples = destframe->nb_samples;
+    av_frame_free(&destframe);
+    
     if(ret != 0)
     {
         fprintf(stderr, "helper: ERR: Failed to resample!! %d\n", ret);
         return 0;
     }
-    return destframe->nb_samples;
+    return nb_samples;
 }
