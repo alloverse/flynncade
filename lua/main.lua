@@ -74,7 +74,8 @@ local corners = {
     tl = {-1.2283, 5.7338, -0.49098},
     tr = {0.94936, 5.7338, -0.49098},
     bl = {-1.2283, 4.1062, 0.41123},
-    br = {0.94936, 4.1062, 0.41123}
+    br = {0.94936, 4.1062, 0.41123},
+    norm = {0, 0.485, 0.875}
 }
 
 local helpPlate = main:addSubview(ui.Surface(ui.Bounds(-0.048, 1.02, 0.5,   0.65, 0.12, 0.05)))
@@ -146,16 +147,17 @@ function newScreen(resolution, cropDimensions)
     local screen = ui.VideoSurface(ui.Bounds.unit(), resolution)
     screen.specification = function()
         local spec = ui.VideoSurface.specification(screen)
-        table.merge(spec, {
+        spec = table.merge(spec, {
             geometry = {
                 type = "inline",
                 --   #bl                  #br                         #tl               #tr
                 vertices= {corners.bl,    corners.br,                 corners.tl,       corners.tr},
                 uvs = {{0.0, screen.uvh}, {screen.uvw, screen.uvh},   {0.0, 0.0},       {screen.uvw, 0.0}},
-                triangles= {{0, 1, 3}, {0, 3, 2}, {1, 0, 2}, {1, 2, 3}},
+                normals = {corners.norm, corners.norm, corners.norm, corners.norm},
+                triangles= {{0, 1, 3}, {2, 0, 3}},
             },
             material = {
-                roughness = 0,
+                roughness = 0.2,
                 metalness = 1,
             }
         })
@@ -242,7 +244,7 @@ dropTarget.onFileDropped = function (self, filename, assetid)
     if ext == "png" or ext == "jpg" or ext == "jpeg" then 
         app.assetManager:load(assetid, function (name, asset)
             app.assetManager:add(asset, true)
-            tv.texture = asset
+            tv.material.texture = asset
             tv.material.uvScale = {1, -1}
             tv:updateComponents()
         end)
@@ -255,7 +257,6 @@ dropTarget.onFileDropped = function (self, filename, assetid)
         end)
     end
 end
-
 
 app.mainView = main
 

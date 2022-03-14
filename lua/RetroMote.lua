@@ -84,7 +84,7 @@ end
 
 
 function RetroMote:specification()
-    local mySpec = tablex.union(View.specification(self), {
+    local mySpec = table.merge(View.specification(self), {
         focus = {
             type= "key"
         },
