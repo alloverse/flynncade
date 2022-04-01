@@ -267,7 +267,7 @@ function Emulator:_sendBufferedAudio()
     --if self.audiodebug then self.audiodebug:write(out) end
     self.elapsed_outaudiotime = self.elapsed_outaudiotime + 960/48000
     
-    self.app.client.client:send_audio(self.speaker.trackId, out)
+    self.app.client:sendAudio(self.speaker.trackId, out)
     if self.buffered_samples > 960 then
         self:_sendBufferedAudio()
     end
