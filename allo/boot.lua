@@ -36,7 +36,6 @@ package.path = package.path
     ..";"..depsDir.."/alloui/lib/pl/lua/?.lua"
     
 -- Establish globals
-require("liballonet")
 local ffi = require 'ffi'
 local libav_available, av = pcall(ffi.load, libDir .. "/liballonet_av."..dylibext, true)
 if not libav_available then
