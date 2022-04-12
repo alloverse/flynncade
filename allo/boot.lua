@@ -27,8 +27,6 @@ elseif string.match(package.cpath, "dll") then
     dylibext = "dll"
 end
 
-package.cpath = package.cpath..";"..libDir.."/?."..dylibext
-
 package.path = package.path
     ..";"..srcDir.."/?.lua"
     ..";"..depsDir.."/alloui/lua/?.lua"
@@ -36,15 +34,18 @@ package.path = package.path
     ..";"..depsDir.."/alloui/lib/pl/lua/?.lua"
     
 -- Establish globals
-require("liballonet")
 local ffi = require 'ffi'
 local libav_available, av = pcall(ffi.load, libDir .. "/liballonet_av."..dylibext, true)
 if not libav_available then
     av = nil
     print("NOTE: liballonet_av not available, h264 cannot be used")
+
+    -- load liballonet
+    allonet = ffi.load(libDir .. "/liballonet."..dylibext, false)
 else
+    -- also loads allonet via weak linking
     print("liballonet_av loaded with libavcodec support")
-    ffi.load(libDir .. "/liballonet."..dylibext, true)
+    ffi.load(libDir .. "/liballonet."..dylibext, false)
     ffi.cdef [[
     void allo_libav_initialize(void);
     ]]

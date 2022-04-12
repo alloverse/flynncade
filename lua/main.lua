@@ -2,8 +2,7 @@ quat = require("modules.quat")
 
 local client = Client(
     arg[2], 
-    "flynncade",
-    allonet.create(true)
+    "flynncade"
 )
 
 app = App(client)
@@ -219,7 +218,7 @@ function run(rom)
 end
 
 app:scheduleAction(5.0, true, function() 
-    print("Network stats", app.client.client:get_stats())
+    print("Network stats", app.client:getStats())
     print("Emulator stats", emulator:get_stats())
 end)
 
