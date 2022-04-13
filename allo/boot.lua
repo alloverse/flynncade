@@ -36,20 +36,20 @@ package.path = package.path
 -- Establish globals
 local ffi = require 'ffi'
 local libav_available, av = pcall(ffi.load, libDir .. "/liballonet_av."..dylibext, true)
-if not libav_available then
-    av = nil
-    print("NOTE: liballonet_av not available, h264 cannot be used")
-
-    -- load liballonet
-    allonet = ffi.load(libDir .. "/liballonet."..dylibext, false)
-else
-    -- also loads allonet via weak linking
+if libav_available then
+    -- loads allonet via weak linking
     print("liballonet_av loaded with libavcodec support")
     ffi.load(libDir .. "/liballonet."..dylibext, false)
     ffi.cdef [[
     void allo_libav_initialize(void);
     ]]
     ffi.C.allo_libav_initialize()
+else
+    av = nil
+    print("NOTE: liballonet_av not available, h264 cannot be used")
+
+    -- load liballonet
+    allonet = ffi.load(libDir .. "/liballonet."..dylibext, false)
 end
  
 Client = require("alloui.client")
