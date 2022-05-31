@@ -1,11 +1,6 @@
-local Emulator = require("Emulator")
-
-local client = Client(
-    arg[2], 
-    "myarcade"
-)
-
+local client = Client(arg[2], "myarcade")
 app = App(client)
+local Emulator = require("Emulator")
 
 assets = {
     arcade = ui.Asset.File("models/220120-arcade.glb"),
