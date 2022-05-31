@@ -14,8 +14,8 @@ main:setGrabbable(true)
 local emulator = Emulator(app)
 
 
-local tv = main:addSubview(ui.ModelView(Bounds.unit():scale(0.3,0.3,0.3), assets.arcade))
-tv.bounds:move(0,0,0)
+local cabinet = main:addSubview(ui.ModelView(Bounds.unit():scale(0.3,0.3,0.3), assets.arcade))
+cabinet.bounds:move(0,0,0)
 local corners = {
     tl = {-1.2283, 5.7338, -0.49098},
     tr = {0.94936, 5.7338, -0.49098},
@@ -48,13 +48,13 @@ function newScreen(resolution, cropDimensions)
     return screen
 end
 
-local controllers = tv:addSubview(View())
+local controllers = cabinet:addSubview(View())
 controllers.bounds:scale(5,5,5):move(0,5.6,-1.4)
 emulator.controllers = {
     controllers:addSubview(RetroMote(Bounds(-0.15, -0.35, 0.6,   0.2, 0.05, 0.1), 1)),
     controllers:addSubview(RetroMote(Bounds( 0.087, -0.35, 0.6,   0.2, 0.05, 0.1), 2))
 }
-emulator.speaker = tv:addSubview(ui.Speaker(Bounds(0, 0.3, 0.2, 0,0,0)))
+emulator.speaker = cabinet:addSubview(ui.Speaker(Bounds(0, 0.3, 0.2, 0,0,0)))
 emulator.onScreenSetup = function (resolution, resmax)
     -- the res we want the screen to be
     local res = resmax
@@ -68,7 +68,7 @@ emulator.onScreenSetup = function (resolution, resmax)
     end
 
     if not emulator.screen then 
-        emulator.screen = tv:addSubview(newScreen(res))
+        emulator.screen = cabinet:addSubview(newScreen(res))
     end
 end
 
@@ -94,33 +94,6 @@ if #arg > 3 then
     defaultGame = arg[4]
 end
 run(defaultGame)
-
-
-
-
-local dropTarget = main:addSubview(View(ui.Bounds.unit():scale(0.7, 0.5, 0.05):rotate(-3.14/6, 1, 0, 0):move(0,1.4,0.0)))
-dropTarget:setPointable(true)
-dropTarget.acceptedFileExtensions = {"png", "jpg", "jpeg"}
-for k,v in pairs(Emulator.coreMap) do table.insert(dropTarget.acceptedFileExtensions, k) end
-dropTarget.onFileDropped = function (self, filename, assetid)
-    local ext = assert(filename:match("^.+%.(.+)$"))
-
-    if ext == "png" or ext == "jpg" or ext == "jpeg" then 
-        app.assetManager:load(assetid, function (name, asset)
-            app.assetManager:add(asset, true)
-            tv.material.texture = asset
-            tv.material.uvScale = {1, -1}
-            tv:updateComponents()
-        end)
-    else
-        app.assetManager:load(assetid, function (name, asset)
-            local file = io.open(filename, "wb")
-            file:write(asset:read())
-            file:close()
-            run(filename)
-        end)
-    end
-end
 
 app.mainView = main
 
