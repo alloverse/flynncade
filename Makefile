@@ -1,7 +1,7 @@
 .PHONY : clean
 
 CFLAGS += -fPIC -g
-LDFLAGS += -shared
+LDFLAGS += -shared -lavutil -lswresample
 
 SOURCES = $(shell echo c/*.c)
 HEADERS = $(shell echo c/*.h)
