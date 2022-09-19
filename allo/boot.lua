@@ -39,8 +39,9 @@ package.path = package.path
 local ffi = require 'ffi'
 local libav_available, av = pcall(ffi.load, libDir .. "/liballonet_av."..dylibext, true)
 if not libav_available then
+    local av_error = av
     av = nil
-    print("NOTE: liballonet_av not available, h264 cannot be used")
+    print("NOTE: liballonet_av not available, h264 cannot be used: ", av_error)
 
     -- load liballonet
     allonet = ffi.load(libDir .. "/liballonet."..dylibext, false)
