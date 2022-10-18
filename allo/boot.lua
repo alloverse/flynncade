@@ -34,21 +34,20 @@ package.path = package.path
     ..";"..depsDir.."/alloui/lua/?.lua"
     ..";"..depsDir.."/alloui/lib/cpml/?.lua"
     ..";"..depsDir.."/alloui/lib/pl/lua/?.lua"
-    
--- Establish globals
+
 local ffi = require 'ffi'
+
+-- load liballonet
+allonet = ffi.load(libDir .. "/liballonet."..dylibext, false)
+
+-- load liballonet_av IF AVAILABLE, and initialize it
 local libav_available, av = pcall(ffi.load, libDir .. "/liballonet_av."..dylibext, true)
 if not libav_available then
     local av_error = av
     av = nil
     print("NOTE: liballonet_av not available, h264 cannot be used: ", av_error)
-
-    -- load liballonet
-    allonet = ffi.load(libDir .. "/liballonet."..dylibext, false)
 else
-    -- also loads allonet via weak linking
     print("liballonet_av loaded with libavcodec support")
-    ffi.load(libDir .. "/liballonet."..dylibext, false)
     ffi.cdef [[
     void allo_libav_initialize(void);
     ]]
