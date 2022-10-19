@@ -34,7 +34,7 @@ do_fetch () {
 }
 
 do_run () {
-    $LUAJIT "$HERE/boot.lua" "$HERE/.." $*
+    $LUAJIT "$HERE/deps/alloui/lua/alloui/app_boot.lua" "$HERE/.." $*
 }
 
 do_serve () {
