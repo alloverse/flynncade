@@ -15,6 +15,7 @@ assets = {
 app.assetManager:add(assets)
 
 local Emulator = require("Emulator")
+local GameList = require("GameList")
 local GameBrowser = require("GameBrowser")
 
 local main = ui.View(Bounds(4, 0.1, -3,   1, 0.2, 1))
@@ -66,6 +67,7 @@ end
 
 local emulator = Emulator(app)
 local gameBrowser = nil
+local gameList = GameList("roms")
 
 local tv = main:addSubview(ui.ModelView(Bounds.unit():scale(0.3,0.3,0.3), assets.arcade))
 tv.bounds:move(0,0,0)
@@ -98,6 +100,10 @@ helpPlate:addSubview(ui.Label{
     halign="left",
 })
 
+function playGameDesc(gameDesc)
+    emulator:loadGame(gameDesc.rom)
+    changeTexture(gameDesc.cabinetTexture)
+end
 
 local menuButton = tv:addSubview(
     ui.Button(ui.Bounds{size=ui.Size(0.5,0.2,0.1)}:move( -0.1, 2.6, 1.3))
@@ -110,12 +116,11 @@ menuButton.onActivated = function(hand)
     gameBrowser:removeFromSuperview()
     gameBrowser = nil
   else 
-    gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05), pose=ui.Pose(1, 1.5, 0)}:rotate(-3.14/8, 0, 1, 0), app)
+    gameBrowser = GameBrowser(ui.Bounds{size=ui.Size(1,1,0.05), pose=ui.Pose(1, 1.5, 0)}:rotate(-3.14/8, 0, 1, 0), app, gameList)
     main:addSubview(gameBrowser)
 
     gameBrowser.onGameChosen = function(game)
-      emulator:loadGame(game.rom)
-      changeTexture(game.cabinetTexture)
+      playGameDesc(game)
 
       gameBrowser:removeFromSuperview()
       gameBrowser = nil
@@ -208,9 +213,9 @@ quitButton.onActivated = function()
 end
 
 local poller = nil
-function run(rom) 
+function run(console, game) 
     if poller then poller:cancel() end
-    emulator:loadGame(rom)
+    playGameDesc(gameList.consoles[console].games[game])
 
     poller = app:scheduleAction(1.0/emulator:getFps(), true, function()
         emulator:poll()
@@ -222,13 +227,13 @@ app:scheduleAction(5.0, true, function()
     print("Emulator stats", emulator:get_stats())
 end)
 
-local defaultGame = "roms/SNES/sf2t/rom.sfc"
--- local defaultGame = "roms/NES/tmnt2/rom.nes"
---local defaultGame = "roms/Genesis/sor3/rom.smd"
-if #arg > 3 then
-    defaultGame = arg[4]
+local defaultConsole = "SNES"
+local defaultGame = "sf2t"
+if #arg > 4 then
+    defaultConsole = arg[4]
+    defaultGame = arg[5]
 end
-run(defaultGame)
+run(defaultConsole, defaultGame)
 
 
 

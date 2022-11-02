@@ -1,6 +1,6 @@
 local class = require('pl.class')
 local pretty = require('pl.pretty')
-local json = require "allo.json"
+
 
 class.GameBrowser(ui.View)
 
@@ -8,17 +8,12 @@ local MENU_ITEM_WIDTH = 1
 local MENU_ITEM_HEIGHT = 0.15
 local MENU_ITEM_PADDING = 0.02
 
-function readfile(path)
-  local f = io.open(path, "r")
-  if not f then return nil end
-  local s = f:read("*a")
-  f:close()
-  return s
-end
 
-function GameBrowser:_init(bounds, app)
+
+function GameBrowser:_init(bounds, app, gameList)
   self:super(bounds)
   self.app = app
+  self.gameList = gameList
 
   assets = {
     quit = ui.Asset.File("images/icon-quit.png"),
@@ -146,8 +141,6 @@ end
 
 
 function GameBrowser:listConsoles()
-  local path = "roms"
-  local depth = 0
 
   -- Create a "page"; the surface on which the menu items will be drawn.
   local page = ui.Surface(ui.Bounds(0,0,0, 0, 0, 0)) --:move(depth/60, -depth/60, depth/60)
@@ -165,12 +158,8 @@ function GameBrowser:listConsoles()
 
 
   -- Look through the console folders
-  local p = io.popen('find ' .. path .. '/* -maxdepth 0')
   local i=0
-  for gamePath in p:lines() do
-
-    -- Quick hack to get the console's name from the path
-    local consoleName = string.sub(gamePath, 6)
+  for _, console in pairs(self.gameList.consoles) do
 
     -- Create a menu item with bounds relative to its parent-to-be page
     local menuItem = ui.Surface(ui.Bounds(
@@ -185,13 +174,13 @@ function GameBrowser:listConsoles()
     menuItem:setColor({1, 1, 1, 1})
 
     -- Create a Label inside said menu item
-    local menuItemLabel = Label{bounds=Bounds(MENU_ITEM_PADDING, 0, 0.001, MENU_ITEM_WIDTH-(MENU_ITEM_PADDING*2), MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4), 0.001), color={0.15,0.15,0.15,1}, text=consoleName, halign="left"}
+    local menuItemLabel = Label{bounds=Bounds(MENU_ITEM_PADDING, 0, 0.001, MENU_ITEM_WIDTH-(MENU_ITEM_PADDING*2), MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4), 0.001), color={0.15,0.15,0.15,1}, text=console.name, halign="left"}
     menuItem:addSubview(menuItemLabel)
 
     -- Make the menuItem interactive
     menuItem:setPointable(true)
     menuItem.onTouchUp = function(pointer)
-      self:listGames(gamePath, consoleName)
+      self:listGames(console)
     end
 
     menuItem.onPointerEntered = function(pointer)
@@ -207,12 +196,9 @@ function GameBrowser:listConsoles()
     
     i = i+1
   end
-  p:close()
 end
 
-function GameBrowser:listGames(path, platform)
-  local depth = 1
-  
+function GameBrowser:listGames(console)
   -- Create a "page"; the surface on which the menu items will be drawn.
   local page = ui.Surface(ui.Bounds(0,0,0, 0, 0, 0)) --:move(depth/60, -depth/60, depth/60)
   page:setColor({0, 0, 1, 0.9})
@@ -227,65 +213,39 @@ function GameBrowser:listGames(path, platform)
   local headerLabel = Label{bounds=Bounds(MENU_ITEM_PADDING, 0, 0.01, MENU_ITEM_WIDTH-(MENU_ITEM_PADDING*2), MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4), 0.01), color={1,1,1,1}, text="Choose Game", halign="left"}
   header:addSubview(headerLabel)
 
-
   -- Iterate through the folder
-  local p = io.popen('find ' .. path .. '/* -maxdepth 0')
   local i=0
-  for gamePath in p:lines() do
+  for _, game in pairs(console.games) do
+    self.app.assetManager:add(game.boxArt, true)
+    self.app.assetManager:add(game.cabinetTexture, true)
 
-    local infojsonstr = readfile(gamePath.."/info.json")
-    if infojsonstr then
+    -- Create a menu item with bounds relative to its parent-to-be page
+    local menuItem = ui.Surface(ui.Bounds(0, 0 - (i * MENU_ITEM_HEIGHT), 0.01,  MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT, 0.01))
+    menuItem:setColor({1, 1, 1, 1})
 
-      local platformToExtensionMap = {
-        NES = "nes",
-        SNES = "sfc",
-        Genesis = "smd"
-      }
+    -- Create a Label inside said menu item
+    local menuItemLabel = Label{bounds=Bounds(MENU_ITEM_PADDING, 0, 0.001, MENU_ITEM_WIDTH-(MENU_ITEM_PADDING*2), MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4), 0.001), color={0.15,0.15,0.15,1}, text=game.meta.gameName, halign="left"}
+    menuItem:addSubview(menuItemLabel)
 
-      local extension = platformToExtensionMap[platform]
-
-      local game = {
-          path= gamePath,
-          meta= json.decode(infojsonstr),
-          rom= gamePath.."/rom."..extension,
-          boxArt= ui.Asset.File(gamePath.."/boxArt.jpg"),
-          cabinetTexture= ui.Asset.File(gamePath.."/cabinet-texture.png"),
-      }
-
-      self.app.assetManager:add(game.boxArt, true)
-      self.app.assetManager:add(game.cabinetTexture, true)
-
-      -- Create a menu item with bounds relative to its parent-to-be page
-      local menuItem = ui.Surface(ui.Bounds(0, 0 - (i * MENU_ITEM_HEIGHT), 0.01,  MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT, 0.01))
-      menuItem:setColor({1, 1, 1, 1})
-
-      -- Create a Label inside said menu item
-      local menuItemLabel = Label{bounds=Bounds(MENU_ITEM_PADDING, 0, 0.001, MENU_ITEM_WIDTH-(MENU_ITEM_PADDING*2), MENU_ITEM_HEIGHT-(MENU_ITEM_PADDING*4), 0.001), color={0.15,0.15,0.15,1}, text=game.meta.gameName, halign="left"}
-      menuItem:addSubview(menuItemLabel)
-
-      -- Make the menuItem interactive
-      menuItem:setPointable(true)
-      menuItem.onTouchUp = function(pointer)
-        self:showGame(game)
-      end
-
-      menuItem.onPointerEntered = function(pointer)
-        menuItem:setColor({0.83, 0.89, 0.93, 1})
-      end
-
-      menuItem.onPointerExited = function(pointer)
-        menuItem:setColor({1, 1, 1, 1})
-      end
-      
-      -- Add the menuItem to the page
-      page:addSubview(menuItem)
-
-      i = i+1
+    -- Make the menuItem interactive
+    menuItem:setPointable(true)
+    menuItem.onTouchUp = function(pointer)
+      self:showGame(game)
     end
 
+    menuItem.onPointerEntered = function(pointer)
+      menuItem:setColor({0.83, 0.89, 0.93, 1})
+    end
+
+    menuItem.onPointerExited = function(pointer)
+      menuItem:setColor({1, 1, 1, 1})
+    end
     
+    -- Add the menuItem to the page
+    page:addSubview(menuItem)
+
+    i = i+1
   end
-  p:close()
 end
 
 function GameBrowser:showGame(game)
