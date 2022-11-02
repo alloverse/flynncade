@@ -232,6 +232,9 @@ local defaultGame = "sf2t"
 if #arg > 4 then
     defaultConsole = arg[4]
     defaultGame = arg[5]
+elseif ui.App.launchArguments.game then
+    defaultConsole = ui.App.launchArguments.console
+    defaultGame = ui.App.launchArguments.game
 end
 run(defaultConsole, defaultGame)
 
